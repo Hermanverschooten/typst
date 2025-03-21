@@ -1,6 +1,8 @@
 defmodule TypstTest do
   use ExUnit.Case
 
+  doctest Typst
+
   test "smoke test" do
     assert "= Hello world" == Typst.render_to_string("= Hello <%= name %>", name: "world")
 
