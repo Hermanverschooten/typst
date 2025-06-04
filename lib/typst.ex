@@ -15,14 +15,14 @@ defmodule Typst do
 
   @spec render_to_string(String.t(), list(formattable)) :: String.t()
   @doc """
-  Formats the given markup template with the given bindings, mostly 
+  Formats the given markup template with the given bindings, mostly
   useful for inspecting and debugging.
 
   ## Examples
 
       iex> Typst.render_to_string("= Hey <%= name %>!", name: "Jude")
       "= Hey Jude!"
-    
+
   """
   def render_to_string(typst_markup, bindings \\ []) do
     EEx.eval_string(typst_markup, bindings)
@@ -40,15 +40,16 @@ defmodule Typst do
       iex> {:ok, pdf} = Typst.render_to_pdf("= test\\n<%= name %>", name: "John")
       iex> is_binary(pdf)
       true
-    
+
   """
   def render_to_pdf(typst_markup, bindings \\ [], opts \\ []) do
     extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
+    root_dir = Keyword.get(opts, :root_dir, ".")
 
     markup =
       render_to_string(typst_markup, bindings)
 
-    Typst.NIF.compile(markup, extra_fonts)
+    Typst.NIF.compile(markup, root_dir, extra_fonts)
   end
 
   @spec render_to_pdf!(String.t(), list(formattable)) :: binary()

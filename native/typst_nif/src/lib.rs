@@ -235,8 +235,8 @@ fn http_successful(status: u16) -> bool {
 }
 
 #[rustler::nif]
-fn compile<'a>(markup: String, extra_fonts: Vec<String>) -> Result<String, String> {
-    let world = TypstNifWorld::new(".".into(), markup, extra_fonts);
+fn compile<'a>(markup: String, root_dir: String, extra_fonts: Vec<String>) -> Result<String, String> {
+    let world = TypstNifWorld::new(root_dir, markup, extra_fonts);
     // Render document
     // let document = typst::compile(&world)
     //     .output
