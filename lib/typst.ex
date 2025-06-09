@@ -54,10 +54,10 @@ defmodule Typst do
 
   @spec render_to_pdf!(String.t(), list(formattable)) :: binary()
   @doc """
-  Same as `render_to_pdf/2`, but raises if the rendering fails.
+  Same as `render_to_pdf/3`, but raises if the rendering fails.
   """
-  def render_to_pdf!(typst_markup, bindings \\ []) do
-    case render_to_pdf(typst_markup, bindings) do
+  def render_to_pdf!(typst_markup, bindings \\ [], opts \\ []) do
+    case render_to_pdf(typst_markup, bindings, opts) do
       {:ok, pdf} -> pdf
       {:error, reason} -> raise "could not build pdf: #{reason}"
     end
