@@ -1137,6 +1137,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5be167a7af36ee22fe3115051bc51f6e6c7054c9348e28deb4f49bd6f705a315"
 
 [[package]]
+name = "pixglyph"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d15afa937836bf3d876f5a04ce28810c06045857bf46c3d0d31073b8aada5494"
+dependencies = [
+ "ttf-parser 0.24.1",
+]
+
+[[package]]
 name = "plist"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2178,6 +2187,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "typst-render"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e76277edcc37998910fa4a2e403056cdadd25e0f85dfbef1e98ac0377d9f04e"
+dependencies = [
+ "bytemuck",
+ "comemo",
+ "image",
+ "pixglyph",
+ "resvg",
+ "tiny-skia",
+ "ttf-parser 0.24.1",
+ "typst-library",
+ "typst-macros",
+ "typst-timing",
+]
+
+[[package]]
 name = "typst-svg"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2242,7 +2269,7 @@ dependencies = [
 
 [[package]]
 name = "typst_nif"
-version = "0.1.1"
+version = "0.1.5"
 dependencies = [
  "comemo",
  "rustler",
@@ -2252,6 +2279,8 @@ dependencies = [
  "typst",
  "typst-kit",
  "typst-pdf",
+ "typst-render",
+ "typst-svg",
  "ureq",
  "zune-inflate",
 ]

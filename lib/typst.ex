@@ -14,6 +14,7 @@ defmodule Typst do
   @type formattable :: {atom, any}
 
   @spec render_to_string(String.t(), list(formattable)) :: String.t()
+
   @doc """
   Formats the given markup template with the given bindings, mostly
   useful for inspecting and debugging.
@@ -24,13 +25,14 @@ defmodule Typst do
       "= Hey Jude!"
 
   """
+
   def render_to_string(typst_markup, bindings \\ []) do
     EEx.eval_string(typst_markup, bindings)
   end
 
-  @type pdf_opt :: {:extra_fonts, list(String.t())}
+  @type typst_opt :: {:extra_fonts, list(String.t())}
 
-  @spec render_to_pdf(String.t(), list(formattable), list(pdf_opt)) ::
+  @spec render_to_pdf(String.t(), list(formattable()), list(typst_opt())) ::
           {:ok, binary()} | {:error, String.t()}
   @doc """
   Converts a given piece of typst markup to a PDF binary.
@@ -46,13 +48,12 @@ defmodule Typst do
     extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
     root_dir = Keyword.get(opts, :root_dir, ".")
 
-    markup =
-      render_to_string(typst_markup, bindings)
+    markup = render_to_string(typst_markup, bindings)
 
-    Typst.NIF.compile(markup, root_dir, extra_fonts)
+    Typst.NIF.compile(markup, root_dir, extra_fonts, :pdf)
   end
 
-  @spec render_to_pdf!(String.t(), list(formattable)) :: binary()
+  @spec render_to_pdf!(String.t(), list(formattable()), list(typst_opt())) :: binary()
   @doc """
   Same as `render_to_pdf/3`, but raises if the rendering fails.
   """
@@ -60,6 +61,70 @@ defmodule Typst do
     case render_to_pdf(typst_markup, bindings, opts) do
       {:ok, pdf} -> pdf
       {:error, reason} -> raise "could not build pdf: #{reason}"
+    end
+  end
+
+  @spec render_to_png(String.t(), list(formattable()), list(typst_opt())) ::
+          {:ok, list(binary())} | {:error, String.t()}
+  @doc """
+  Converts a given piece of typst markup to a PNG binary, one per each page.
+
+  ## Examples
+
+      iex> {:ok, pngs} = Typst.render_to_png("= test\\n<%= name %>", name: "John")
+      iex> is_list(pngs)
+      true
+
+  """
+  def render_to_png(typst_markup, bindings \\ [], opts \\ []) do
+    extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
+    root_dir = Keyword.get(opts, :root_dir, ".")
+
+    markup = render_to_string(typst_markup, bindings)
+
+    Typst.NIF.compile(markup, root_dir, extra_fonts, :png)
+  end
+
+  @spec render_to_png!(String.t(), list(formattable()), list(typst_opt())) :: list(binary())
+  @doc """
+  Same as `render_to_png/3`, but raises if the rendering fails.
+  """
+  def render_to_png!(typst_markup, bindings \\ [], opts \\ []) do
+    case render_to_png(typst_markup, bindings, opts) do
+      {:ok, png} -> png
+      {:error, reason} -> raise "could not build png: #{reason}"
+    end
+  end
+
+  @spec render_to_svg(String.t(), list(formattable()), list(typst_opt())) ::
+          {:ok, list(String.t())} | {:error, String.t()}
+  @doc """
+  Converts a given piece of typst markup to an SVG string, one per each page.
+
+  ## Examples
+
+      iex> {:ok, svgs} = Typst.render_to_svg("= test\\n<%= name %>", name: "John")
+      iex> is_list(svgs)
+      true
+
+  """
+  def render_to_svg(typst_markup, bindings \\ [], opts \\ []) do
+    extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
+    root_dir = Keyword.get(opts, :root_dir, ".")
+
+    markup = render_to_string(typst_markup, bindings)
+
+    Typst.NIF.compile(markup, root_dir, extra_fonts, :svg)
+  end
+
+  @spec render_to_svg!(String.t(), list(formattable()), list(typst_opt())) :: list(binary())
+  @doc """
+  Same as `render_to_svg/3`, but raises if the rendering fails.
+  """
+  def render_to_svg!(typst_markup, bindings \\ [], opts \\ []) do
+    case render_to_svg(typst_markup, bindings, opts) do
+      {:ok, svg} -> svg
+      {:error, reason} -> raise "could not build svg: #{reason}"
     end
   end
 end

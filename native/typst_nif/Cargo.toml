@@ -16,10 +16,10 @@ tar = "0.4.43"
 time = "0.3.36"
 ttf-parser = "0.25.0"
 typst = "0.13.1"
-typst-kit = { version = "0.13.1", default-features = false, features = [
-  "embed-fonts",
-] }
+typst-kit = { version = "0.13.1", default-features = false, features = ["embed-fonts"] }
 typst-pdf = "0.13.1"
+typst-render = "0.13.1"
+typst-svg = "0.13.1"
 ureq = "2.10.1"
 zune-inflate = "0.2.54"
 
@@ -31,4 +31,4 @@ nif_version_2_16 = ["rustler/nif_version_2_16"]
 nif_version_2_17 = ["rustler/nif_version_2_17"]
 
 [build.env]
-passthrough = [ "RUST_MIN_STACK" ]
+passthrough = ["RUST_MIN_STACK"]

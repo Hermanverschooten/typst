@@ -20,5 +20,6 @@ defmodule Typst.NIF do
     base_url: "#{github_url}/releases/download/v#{version}",
     mode: mode
 
-  def compile(_content, _root_dir, _font_paths), do: :erlang.nif_error(:nif_not_loaded)
+  def compile(_content, _root_dir, _font_paths, _render_type),
+    do: :erlang.nif_error(:nif_not_loaded)
 end
