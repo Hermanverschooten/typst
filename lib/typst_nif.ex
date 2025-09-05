@@ -18,7 +18,8 @@ defmodule Typst.NIF do
     crate: "typst_nif",
     version: version,
     base_url: "#{github_url}/releases/download/v#{version}",
-    mode: mode
+    mode: mode,
+    target: System.get_env("RUSTLER_TARGET")
 
   def compile(_content, _root_dir, _font_paths, _render_type),
     do: :erlang.nif_error(:nif_not_loaded)
