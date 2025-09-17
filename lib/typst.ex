@@ -50,7 +50,7 @@ defmodule Typst do
 
     markup = render_to_string(typst_markup, bindings)
 
-    Typst.NIF.compile(markup, root_dir, extra_fonts, :pdf)
+    Typst.NIF.compile_pdf(markup, root_dir, extra_fonts)
   end
 
   @spec render_to_pdf!(String.t(), list(formattable()), list(typst_opt())) :: binary()
@@ -79,10 +79,11 @@ defmodule Typst do
   def render_to_png(typst_markup, bindings \\ [], opts \\ []) do
     extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
     root_dir = Keyword.get(opts, :root_dir, ".")
+    pixels_per_pt = Keyword.get(opts, :pixels_per_pt, 1.0)
 
     markup = render_to_string(typst_markup, bindings)
 
-    Typst.NIF.compile(markup, root_dir, extra_fonts, :png)
+    Typst.NIF.compile_png(markup, root_dir, extra_fonts, pixels_per_pt)
   end
 
   @spec render_to_png!(String.t(), list(formattable()), list(typst_opt())) :: list(binary())
@@ -93,38 +94,6 @@ defmodule Typst do
     case render_to_png(typst_markup, bindings, opts) do
       {:ok, png} -> png
       {:error, reason} -> raise "could not build png: #{reason}"
-    end
-  end
-
-  @spec render_to_svg(String.t(), list(formattable()), list(typst_opt())) ::
-          {:ok, list(String.t())} | {:error, String.t()}
-  @doc """
-  Converts a given piece of typst markup to an SVG string, one per each page.
-
-  ## Examples
-
-      iex> {:ok, svgs} = Typst.render_to_svg("= test\\n<%= name %>", name: "John")
-      iex> is_list(svgs)
-      true
-
-  """
-  def render_to_svg(typst_markup, bindings \\ [], opts \\ []) do
-    extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
-    root_dir = Keyword.get(opts, :root_dir, ".")
-
-    markup = render_to_string(typst_markup, bindings)
-
-    Typst.NIF.compile(markup, root_dir, extra_fonts, :svg)
-  end
-
-  @spec render_to_svg!(String.t(), list(formattable()), list(typst_opt())) :: list(binary())
-  @doc """
-  Same as `render_to_svg/3`, but raises if the rendering fails.
-  """
-  def render_to_svg!(typst_markup, bindings \\ [], opts \\ []) do
-    case render_to_svg(typst_markup, bindings, opts) do
-      {:ok, svg} -> svg
-      {:error, reason} -> raise "could not build svg: #{reason}"
     end
   end
 end
