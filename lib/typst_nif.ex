@@ -21,6 +21,9 @@ defmodule Typst.NIF do
     mode: mode,
     target: System.get_env("RUSTLER_TARGET")
 
-  def compile(_content, _root_dir, _font_paths, _render_type),
+  def compile_pdf(_content, _root_dir, _font_paths),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def compile_png(_content, _root_dir, _font_paths, _pixels_per_pt),
     do: :erlang.nif_error(:nif_not_loaded)
 end

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use rustler::{Encoder, Env, NewBinary, Term};
+use rustler::{Binary, Env, NewBinary, Term};
 use typst::diag::{eco_format, FileError, FileResult, PackageError, PackageResult};
 use typst::foundations::{Bytes, Datetime};
 use typst::layout::PagedDocument;
@@ -14,37 +14,6 @@ use typst::utils::LazyHash;
 use typst::Library;
 use typst_kit::fonts::{FontSlot, Fonts};
 use typst_pdf::PdfOptions;
-
-mod atoms {
-    rustler::atoms! {
-        pdf,
-        png,
-        svg
-    }
-}
-
-#[derive(Debug)]
-enum RenderType {
-    Pdf,
-    Png,
-    Svg,
-}
-
-impl<'a> rustler::Decoder<'a> for RenderType {
-    fn decode(term: rustler::Term<'a>) -> rustler::NifResult<Self> {
-        let atom: rustler::Atom = term.decode()?;
-
-        if atom == atoms::pdf() {
-            Ok(RenderType::Pdf)
-        } else if atom == atoms::png() {
-            Ok(RenderType::Png)
-        } else if atom == atoms::svg() {
-            Ok(RenderType::Svg)
-        } else {
-            Err(rustler::Error::BadArg)
-        }
-    }
-}
 
 /// Main interface that determines the environment for Typst.
 pub struct TypstNifWorld {
@@ -268,78 +237,54 @@ fn http_successful(status: u16) -> bool {
 }
 
 #[rustler::nif]
-fn compile<'a>(
+fn compile_pdf<'a>(
     env: Env<'a>,
     markup: String,
     root_dir: String,
     extra_fonts: Vec<String>,
-    render_type: RenderType,
 ) -> Result<Term<'a>, String> {
     let world = TypstNifWorld::new(root_dir, markup, extra_fonts);
-    // Render document
-    // let document = typst::compile(&world)
-    //     .output
-    //     .expect("Error compiling typst");
+    let document: PagedDocument = typst::compile(&world)
+        .output
+        .map_err(|e| format!("{:#?}", e))?;
 
-    // Output to pdf
-    // let pdf = typst_pdf::pdf(&document, &PdfOptions::default()).expect("Error exporting PDF");
-    // fs::write("./output.pdf", pdf).expect("Error writing PDF.");
+    let pdf_bytes =
+        typst_pdf::pdf(&document, &PdfOptions::default()).map_err(|e| format!("{:#?}", e))?;
 
-    match render_type {
-        RenderType::Pdf => {
-            let document: PagedDocument = typst::compile(&world)
-                .output
-                .map_err(|e| format!("{:#?}", e))?;
+    let mut binary = NewBinary::new(env, pdf_bytes.len());
+    binary.copy_from_slice(pdf_bytes.as_slice());
 
-            let pdf_bytes = typst_pdf::pdf(&document, &PdfOptions::default())
-                .map_err(|e| format!("{:#?}", e))?;
+    return Ok(binary.into());
+}
 
-            let mut binary = NewBinary::new(env, pdf_bytes.len());
-            binary.copy_from_slice(pdf_bytes.as_slice());
+#[rustler::nif]
+fn compile_png<'a>(
+    env: Env<'a>,
+    markup: String,
+    root_dir: String,
+    extra_fonts: Vec<String>,
+    pixels_per_pt: f32,
+) -> Result<Vec<Binary<'a>>, String> {
+    let world = TypstNifWorld::new(root_dir, markup, extra_fonts);
 
-            return Ok(binary.into());
-        }
+    let document: PagedDocument = typst::compile(&world)
+        .output
+        .map_err(|e| format!("{:#?}", e))?;
 
-        RenderType::Png => {
-            let document: PagedDocument = typst::compile(&world)
-                .output
-                .map_err(|e| format!("{:#?}", e))?;
+    let pngs: Result<Vec<Binary>, String> = document
+        .pages
+        .iter()
+        .map(|page| {
+            let pixmap = typst_render::render(page, pixels_per_pt);
+            let png = pixmap.encode_png().map_err(|e| format!("{:#?}", e))?;
 
-            let pngs: Result<Vec<Term>, String> = document
-                .pages
-                .iter()
-                .map(|page| {
-                    let pixmap = typst_render::render(page, 1.0);
-                    let png = pixmap.encode_png().map_err(|e| format!("{:#?}", e))?;
+            let mut binary = NewBinary::new(env, png.len());
+            binary.copy_from_slice(&png);
+            Ok(binary.into())
+        })
+        .collect();
 
-                    let mut binary = NewBinary::new(env, png.len());
-                    binary.copy_from_slice(&png);
-                    Ok(binary.into())
-                })
-                .collect();
-
-            let pngs = pngs?;
-
-            Ok(pngs.encode(env))
-        }
-
-        RenderType::Svg => {
-            let document: PagedDocument = typst::compile(&world)
-                .output
-                .map_err(|e| format!("{:#?}", e))?;
-
-            let svgs: Vec<Term> = document
-                .pages
-                .iter()
-                .map(|page| {
-                    let svg = typst_svg::svg(page);
-                    svg.encode(env)
-                })
-                .collect();
-
-            Ok(svgs.encode(env))
-        }
-    }
+    Ok(pngs?)
 }
 
 rustler::init!("Elixir.Typst.NIF");
