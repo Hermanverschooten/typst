@@ -4,7 +4,10 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 use rustler::{Binary, Env, NewBinary, Term};
-use typst::diag::{eco_format, FileError, FileResult, PackageError, PackageResult};
+use typst::diag::{
+    eco_format, FileError, FileResult, PackageError, PackageResult, SourceDiagnostic,
+};
+use typst::ecow::EcoVec;
 use typst::foundations::{Bytes, Datetime};
 use typst::layout::PagedDocument;
 use typst::syntax::package::PackageSpec;
@@ -246,7 +249,7 @@ fn compile_pdf<'a>(
     let world = TypstNifWorld::new(root_dir, markup, extra_fonts);
     let document: PagedDocument = typst::compile(&world)
         .output
-        .map_err(|e| format!("{:#?}", e))?;
+        .map_err(|e| collect_typst_errors(e, world.source))?;
 
     let pdf_bytes =
         typst_pdf::pdf(&document, &PdfOptions::default()).map_err(|e| format!("{:#?}", e))?;
@@ -269,7 +272,7 @@ fn compile_png<'a>(
 
     let document: PagedDocument = typst::compile(&world)
         .output
-        .map_err(|e| format!("{:#?}", e))?;
+        .map_err(|e| collect_typst_errors(e, world.source))?;
 
     let pngs: Result<Vec<Binary>, String> = document
         .pages
@@ -285,6 +288,53 @@ fn compile_png<'a>(
         .collect();
 
     Ok(pngs?)
+}
+
+fn collect_typst_errors(errors: EcoVec<SourceDiagnostic>, source: Source) -> String {
+    let mut error_messages = Vec::new();
+
+    for error in errors {
+        let span = error.span;
+
+        let mut error_msg = format!("Error: {}", error.message);
+
+        // Try to get source location information
+        if !span.is_detached() && span.id() == Some(source.id()) {
+            if let Some(range) = source.range(span) {
+                let line = source.byte_to_line(range.start).unwrap_or(0) + 1;
+                let column = source.byte_to_column(range.start).unwrap_or(0) + 1;
+
+                error_msg = format!("[line {}:{}] {}", line, column, error.message);
+
+                // Try to get the actual source line for context
+                if let Some(line_range) = source.line_to_range(line - 1) {
+                    let source_line = &source.text()[line_range];
+                    let trimmed_line = source_line.trim_end();
+
+                    // Calculate the position of the error marker
+                    let leading_spaces = source_line.len() - source_line.trim_start().len();
+                    let marker_pos = column.saturating_sub(1).saturating_sub(leading_spaces);
+
+                    error_msg = format!(
+                        "{}\n  Source: {}\n         {}{}",
+                        error_msg,
+                        trimmed_line.trim(),
+                        " ".repeat(marker_pos),
+                        "^"
+                    );
+                }
+            }
+        }
+
+        // Add hints if any
+        for hint in &error.hints {
+            error_msg = format!("{}\n  Hint: {}", error_msg, hint);
+        }
+
+        error_messages.push(error_msg);
+    }
+
+    error_messages.join("\n\n")
 }
 
 rustler::init!("Elixir.Typst.NIF");
