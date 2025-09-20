@@ -33,6 +33,7 @@ defmodule Typst.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:decimal, "~> 2.0", optional: true},
       {:rustler, ">= 0.0.0", optional: true},
       {:rustler_precompiled, "~> 0.8"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false}

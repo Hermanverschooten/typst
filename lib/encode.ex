@@ -24,6 +24,20 @@ defimpl Typst.Encode, for: Integer do
   end
 end
 
+defimpl Typst.Encode, for: Float do
+  def to_string(float) do
+    String.Chars.Float.to_string(float)
+  end
+end
+
+if Code.ensure_loaded?(Decimal) do
+  defimpl Typst.Encode, for: Decimal do
+    def to_string(decimal) do
+      "decimal(\"#{Decimal.to_string(decimal)}\")"
+    end
+  end
+end
+
 defimpl Typst.Encode, for: BitString do
   def to_string(str) do
     replacements = %{
