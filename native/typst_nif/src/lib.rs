@@ -237,14 +237,7 @@ fn http_successful(status: u16) -> bool {
 #[rustler::nif]
 fn compile<'a>(markup: String, root_dir: String, extra_fonts: Vec<String>) -> Result<String, String> {
     let world = TypstNifWorld::new(root_dir, markup, extra_fonts);
-    // Render document
-    // let document = typst::compile(&world)
-    //     .output
-    //     .expect("Error compiling typst");
 
-    // Output to pdf
-    // let pdf = typst_pdf::pdf(&document, &PdfOptions::default()).expect("Error exporting PDF");
-    // fs::write("./output.pdf", pdf).expect("Error writing PDF.");
     match typst::compile(&world).output {
         Ok(document) => {
             match typst_pdf::pdf(&document, &PdfOptions::default()) {
@@ -255,16 +248,58 @@ fn compile<'a>(markup: String, root_dir: String, extra_fonts: Vec<String>) -> Re
                         return Ok(String::from_utf8_unchecked(pdf_bytes));
                     }
                 }
-                // Err(e) => Err(String::from_str("Error").unwrap()),
                 Err(e) => {
                     let error_string = format!("{:#?}", e);
                     return Err(error_string);
                 }
             };
         }
-        Err(e) => {
-            let error_string = format!("{:#?}", e);
-            return Err(error_string);
+        Err(errors) => {
+            let mut error_messages = Vec::new();
+
+            for error in errors {
+                let span = error.span;
+                let source = &world.source;
+
+                let mut error_msg = format!("Error: {}", error.message);
+
+                // Try to get source location information
+                if !span.is_detached() && span.id() == Some(source.id()) {
+                    if let Some(range) = source.range(span) {
+                        let line = source.byte_to_line(range.start).unwrap_or(0) + 1;
+                        let column = source.byte_to_column(range.start).unwrap_or(0) + 1;
+
+                        error_msg = format!("[line {}:{}] {}", line, column, error.message);
+
+                        // Try to get the actual source line for context
+                        if let Some(line_range) = source.line_to_range(line - 1) {
+                            let source_line = &source.text()[line_range];
+                            let trimmed_line = source_line.trim_end();
+
+                            // Calculate the position of the error marker
+                            let leading_spaces = source_line.len() - source_line.trim_start().len();
+                            let marker_pos = column.saturating_sub(1).saturating_sub(leading_spaces);
+
+                            error_msg = format!(
+                                "{}\n  Source: {}\n         {}{}",
+                                error_msg,
+                                trimmed_line.trim(),
+                                " ".repeat(marker_pos),
+                                "^"
+                            );
+                        }
+                    }
+                }
+
+                // Add hints if any
+                for hint in &error.hints {
+                    error_msg = format!("{}\n  Hint: {}", error_msg, hint);
+                }
+
+                error_messages.push(error_msg);
+            }
+
+            return Err(error_messages.join("\n\n"));
         }
     };
 }
