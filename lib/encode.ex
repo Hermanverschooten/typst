@@ -40,6 +40,14 @@ end
 
 defimpl Typst.Encode, for: BitString do
   def to_string(str) do
+    if String.printable?(str) do
+      to_string_printable(str)
+    else
+      to_bytes(str)
+    end
+  end
+
+  defp to_string_printable(str) do
     replacements = %{
       "\\" => "\\\\",
       "\"" => "\\\"",
@@ -51,6 +59,15 @@ defimpl Typst.Encode, for: BitString do
     escaped = String.replace(str, Map.keys(replacements), &Map.fetch!(replacements, &1))
 
     "\"#{escaped}\""
+  end
+
+  defp to_bytes(bytes) do
+    bytes =
+      bytes
+      |> :binary.bin_to_list()
+      |> Enum.join(", ")
+
+    "bytes(#{bytes})"
   end
 end
 

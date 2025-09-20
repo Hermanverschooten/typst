@@ -39,6 +39,10 @@ defmodule Typst.EncodeTest do
   end
 
   describe "to_string/1 for BitString" do
+    test "empty string" do
+      assert ~S|""| = Encode.to_string("")
+    end
+
     test "simple string is properly quoted and escaped" do
       assert ~S|"hello world"| = Encode.to_string("hello world")
     end
@@ -61,6 +65,10 @@ defmodule Typst.EncodeTest do
     test "unicode characters" do
       result = Encode.to_string(["Hello 🌍", "café", "naïve", "résumé", "тест", "🚀✨"])
       assert ~S|("Hello 🌍", "café", "naïve", "résumé", "тест", "🚀✨")| = result
+    end
+
+    test "encode as bytes" do
+      assert ~S|bytes(0, 1, 2, 3)| = Encode.to_string(<<0, 1, 2, 3>>)
     end
   end
 
