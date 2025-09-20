@@ -146,3 +146,9 @@ defimpl Typst.Encode, for: DateTime do
     |> Typst.Encode.NaiveDateTime.to_string()
   end
 end
+
+defimpl Typst.Encode, for: Regex do
+  def to_string(regex) do
+    "regex(`#{regex.source}`.text)"
+  end
+end

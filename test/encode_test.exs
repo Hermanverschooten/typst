@@ -122,6 +122,12 @@ defmodule Typst.EncodeTest do
     end
   end
 
+  describe "to_string/1 for Regex" do
+    test "regexes can be encoded" do
+      assert ~S|regex(`\d+\.\d+\.\d+`.text)| = Encode.to_string(~r/\d+\.\d+\.\d+/)
+    end
+  end
+
   describe "to_string/1 for Integer" do
     test "integers can be encoded" do
       assert "42" = Encode.to_string(42)
