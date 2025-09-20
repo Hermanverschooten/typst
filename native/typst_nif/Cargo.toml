@@ -19,7 +19,6 @@ typst = "0.13.1"
 typst-kit = { version = "0.13.1", default-features = false, features = ["embed-fonts"] }
 typst-pdf = "0.13.1"
 typst-render = "0.13.1"
-typst-svg = "0.13.1"
 ureq = "2.10.1"
 zune-inflate = "0.2.54"
 
