@@ -18,6 +18,10 @@ defmodule Typst.EncodeTest do
     test "list of mixed subtypes" do
       assert ~S|("a", "b", 3)| = Encode.to_string(["a", "b", 3])
     end
+
+    test "keyword list" do
+      assert ~S|(a: "b", c: "d")| = Encode.to_string(a: "b", c: "d")
+    end
   end
 
   describe "to_string/1 for Map" do
@@ -35,6 +39,10 @@ defmodule Typst.EncodeTest do
 
     test "map of mixed types" do
       assert ~s|(a: "x", b: 2)| = Encode.to_string(%{"a" => "x", "b" => 2})
+    end
+
+    test "atom keys" do
+      assert ~S|(c: "d", a: "b")| = Encode.to_string(%{a: "b", c: "d"})
     end
   end
 
@@ -81,6 +89,36 @@ defmodule Typst.EncodeTest do
   describe "to_string/1 for Tuple" do
     test "labeled tuples are encoded as typst labels" do
       assert "<test>" = Encode.to_string({:label, :test})
+    end
+  end
+
+  describe "to_string/1 for Date" do
+    test "dates can be encoded" do
+      assert "datetime(year: 2025, month: 9, day: 20)" = Encode.to_string(~D[2025-09-20])
+    end
+  end
+
+  describe "to_string/1 for Time" do
+    test "times can be encoded" do
+      assert "datetime(hour: 10, minute: 11, second: 12)" = Encode.to_string(~T[10:11:12])
+    end
+
+    test "does not support subsecond values" do
+      assert "datetime(hour: 10, minute: 11, second: 12)" = Encode.to_string(~T[10:11:12.013])
+    end
+  end
+
+  describe "to_string/1 for NaiveDateTime" do
+    test "naive datetimes can be encoded" do
+      assert "datetime(year: 2025, month: 9, day: 20, hour: 10, minute: 11, second: 12)" =
+               Encode.to_string(~N[2025-09-20 10:11:12])
+    end
+  end
+
+  describe "to_string/1 for DateTime" do
+    test "datetimes drop any timezone related information" do
+      assert "datetime(year: 2025, month: 9, day: 20, hour: 10, minute: 11, second: 12)" =
+               Encode.to_string(~U[2025-09-20 10:11:12Z])
     end
   end
 
