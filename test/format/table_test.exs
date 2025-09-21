@@ -1,29 +1,31 @@
 defmodule Typst.Format.TableTest do
   use ExUnit.Case, async: true
+  import Typst, only: :sigils
+  import Typst.Format
+  alias Typst.Format.Table
+  alias Typst.Format.Table.{Hline, Header}
 
   doctest Typst.Format.Table
 
   test "table" do
-    import Typst.Format
-    alias Typst.Format.Table
-    alias Typst.Format.Table.{Hline, Header}
-
-    table =
-      %Table{
+    assigns = %{
+      table: %Table{
         columns: 2,
         content: [
           %Header{content: ["col1", "col2"], repeat: false},
-          [bold("hello"), "world"],
+          ["*hello*", "world"],
           %Hline{start: 1},
-          [bold("foo"), "bar"]
+          ["*foo*", "bar"]
         ]
       }
+    }
 
-    expected =
-      "#table(columns: 2, table.header(repeat: false, [col1], [col2]), [*hello*], [world], table.hline(start: 1), [*foo*], [bar])"
+    template = ~TYPST"""
+    <%| table %>
+    """
 
-    assert expected == Typst.render_to_string("<%= table %>", table: table)
-    {:ok, _pdf} = Typst.render_to_pdf("<%= table %>", table: table)
+    assert "#table(columns: 2, table.header(repeat: false, [col1], [col2]), [*hello*], [world], table.hline(start: 1), [*foo*], [bar])" ==
+             template
   end
 
   test "cell" do

@@ -1,12 +1,28 @@
 defmodule TypstTest do
   use ExUnit.Case, async: true
+  import Typst, only: :sigils
 
   doctest Typst
 
   test "smoke test" do
-    assert "= Hello world" == Typst.render_to_string("= Hello <%= name %>", name: "world")
+    assigns = %{
+      font: "Roboto",
+      name: "world"
+    }
 
-    {:ok, pdf} = Typst.render_to_pdf("= Hello <%= name %>", name: "world")
+    template = ~TYPST"""
+    #text(font: <%= @font %>)[
+      = Hello <%| @name %>
+    ]
+    """
+
+    assert """
+           #text(font: "Roboto")[
+             = Hello world
+           ]
+           """ == template
+
+    {:ok, pdf} = Typst.render_to_pdf(template)
     assert is_binary(pdf)
   end
 end

@@ -1,6 +1,4 @@
 defmodule Typst.Format.Table do
-  import Typst.Format
-
   @moduledoc """
   Creates a typst [`#table()`](https://typst.app/docs/reference/model/table) and implements the `String.Chars` protocol for easy EEx interpolation.
   To build more complex tables you can use the structs under this module like `Typst.Format.Table.Hline`
@@ -45,28 +43,33 @@ defmodule Typst.Format.Table do
     :rows
   ]
 
-  defimpl String.Chars do
-    def to_string(%Typst.Format.Table{} = table) do
-      [
-        "#table(",
-        [
-          if_set(table.columns, "columns: #{table.columns}"),
-          if_set(table.rows, "rows: #{table.rows}"),
-          if_set(table.gutter, "gutter: #{table.gutter}"),
-          if_set(table.column_gutter, "column-gutter: #{table.column_gutter}"),
-          if_set(table.row_gutter, "row-gutter: #{table.row_gutter}"),
-          if_set(table.fill, "fill: #{table.fill}"),
-          if_set(table.align, "align: #{table.align}"),
-          if_set(table.stroke, "stroke: #{table.stroke}"),
-          if_set(table.inset, "inset: #{table.inset}")
-        ]
-        |> Enum.reject(fn item -> item == [] end)
-        |> Enum.intersperse(", ")
-        |> maybe_append_separator(),
-        Typst.Format.recurse(table.content),
-        ")"
+  defimpl Typst.Markup do
+    def encode(%Typst.Format.Table{} = table) do
+      option_fields = [
+        :columns,
+        :gutter,
+        :row_gutter,
+        :column_gutter,
+        :fill,
+        :align,
+        :stroke,
+        :inset,
+        :rows
       ]
-      |> IO.iodata_to_binary()
+
+      kv =
+        for k <- option_fields,
+            v <- Map.fetch!(table, k),
+            v do
+          {k, v}
+        end
+        |> Typst.Code.Map.encode_kv()
+        |> then(fn
+          "" -> ""
+          str -> str <> ", "
+        end)
+
+      "#table(#{kv}..#{Typst.Code.encode(table.content)})"
     end
   end
 

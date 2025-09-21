@@ -1,67 +1,67 @@
-defprotocol Typst.Encode do
-  def to_string(t)
+defprotocol Typst.Code do
+  def encode(t)
 end
 
-defimpl Typst.Encode, for: Map do
-  def to_string(map) when map_size(map) == 0 do
+defimpl Typst.Code, for: Map do
+  def encode(map) when map_size(map) == 0 do
     "(:)"
   end
 
-  def to_string(map) do
+  def encode(map) do
     "(#{encode_kv(map)})"
   end
 
   def encode_kv(map) do
     Enum.map_join(map, ", ", fn
       {k, v} when is_binary(k) ->
-        "#{String.Chars.BitString.to_string(k)}: #{Typst.Encode.to_string(v)}"
+        "#{String.Chars.BitString.to_string(k)}: #{Typst.Code.encode(v)}"
 
       {k, v} when is_atom(k) ->
-        "#{Typst.Encode.Atom.to_string(k)}: #{Typst.Encode.to_string(v)}"
+        "#{Typst.Code.Atom.encode(k)}: #{Typst.Code.encode(v)}"
     end)
   end
 end
 
-defimpl Typst.Encode, for: List do
-  def to_string(list) do
+defimpl Typst.Code, for: List do
+  def encode(list) do
     if Keyword.keyword?(list) do
-      "(#{Typst.Encode.Map.encode_kv(list)})"
+      "(#{Typst.Code.Map.encode_kv(list)})"
     else
-      "(#{Enum.map_join(list, ", ", &Typst.Encode.to_string/1)})"
+      "(#{Enum.map_join(list, ", ", &Typst.Code.encode/1)})"
     end
   end
 end
 
-defimpl Typst.Encode, for: Integer do
-  def to_string(int) do
+defimpl Typst.Code, for: Integer do
+  def encode(int) do
     String.Chars.Integer.to_string(int)
   end
 end
 
-defimpl Typst.Encode, for: Float do
-  def to_string(float) do
+defimpl Typst.Code, for: Float do
+  def encode(float) do
     String.Chars.Float.to_string(float)
   end
 end
 
 if Code.ensure_loaded?(Decimal) do
-  defimpl Typst.Encode, for: Decimal do
-    def to_string(decimal) do
+  defimpl Typst.Code, for: Decimal do
+    def encode(decimal) do
       "decimal(\"#{Decimal.to_string(decimal)}\")"
     end
   end
 end
 
-defimpl Typst.Encode, for: BitString do
-  def to_string(str) do
+defimpl Typst.Code, for: BitString do
+  def encode(str) do
     if String.printable?(str) do
-      to_string_printable(str)
+      encode_printable(str)
     else
-      to_bytes(str)
+      encode_bytes(str)
     end
   end
 
-  defp to_string_printable(str) do
+  defp encode_printable(str) do
     replacements = %{
       "\\" => "\\\\",
       "\"" => "\\\"",
@@ -75,7 +75,7 @@ defimpl Typst.Encode, for: BitString do
     "\"#{escaped}\""
   end
 
-  defp to_bytes(bytes) do
+  defp encode_bytes(bytes) do
     bytes =
       bytes
       |> :binary.bin_to_list()
@@ -85,22 +85,22 @@ defimpl Typst.Encode, for: BitString do
   end
 end
 
-defimpl Typst.Encode, for: Atom do
-  def to_string(atom) do
+defimpl Typst.Code, for: Atom do
+  def encode(atom) do
     Atom.to_string(atom)
   end
 end
 
-defimpl Typst.Encode, for: Tuple do
-  def to_string({:label, label}) when is_atom(label) do
+defimpl Typst.Code, for: Tuple do
+  def encode({:label, label}) when is_atom(label) do
     "<#{Atom.to_string(label)}>"
   end
 end
 
-defimpl Typst.Encode, for: Date do
-  def to_string(date) do
+defimpl Typst.Code, for: Date do
+  def encode(date) do
     kv =
-      Typst.Encode.Map.encode_kv(
+      Typst.Code.Map.encode_kv(
         year: date.year,
         month: date.month,
         day: date.day
@@ -110,10 +110,10 @@ defimpl Typst.Encode, for: Date do
   end
 end
 
-defimpl Typst.Encode, for: Time do
-  def to_string(time) do
+defimpl Typst.Code, for: Time do
+  def encode(time) do
     kv =
-      Typst.Encode.Map.encode_kv(
+      Typst.Code.Map.encode_kv(
         hour: time.hour,
         minute: time.minute,
         second: time.second
@@ -123,10 +123,10 @@ defimpl Typst.Encode, for: Time do
   end
 end
 
-defimpl Typst.Encode, for: NaiveDateTime do
-  def to_string(naive) do
+defimpl Typst.Code, for: NaiveDateTime do
+  def encode(naive) do
     kv =
-      Typst.Encode.Map.encode_kv(
+      Typst.Code.Map.encode_kv(
         year: naive.year,
         month: naive.month,
         day: naive.day,
@@ -139,16 +139,16 @@ defimpl Typst.Encode, for: NaiveDateTime do
   end
 end
 
-defimpl Typst.Encode, for: DateTime do
-  def to_string(datetime) do
+defimpl Typst.Code, for: DateTime do
+  def encode(datetime) do
     datetime
     |> DateTime.to_naive()
-    |> Typst.Encode.NaiveDateTime.to_string()
+    |> Typst.Code.NaiveDateTime.encode()
   end
 end
 
-defimpl Typst.Encode, for: Regex do
-  def to_string(regex) do
+defimpl Typst.Code, for: Regex do
+  def encode(regex) do
     "regex(`#{regex.source}`.text)"
   end
 end

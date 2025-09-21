@@ -1,76 +1,133 @@
 defmodule Typst.EngineTest do
   use ExUnit.Case, async: true
 
-  describe "Typst.Engine" do
-    test "renders basic templates with interpolated values" do
-      template = """
-      Hello <%= "world" %>!
-      """
+  test "renders basic templates with interpolated values" do
+    template = """
+    Hello <%| "world" %>!
+    """
 
-      assert ~s|Hello "world"!\n| = EEx.eval_string(template, [], engine: Typst.Engine)
-    end
+    assert ~s|Hello world!\n| = EEx.eval_string(template, [], engine: Typst.Engine)
+  end
 
-    test "handles multiple interpolations in a single template" do
-      template = """
-      Name: <%= "Alice" %>
-      Age: <%= 30 %>
-      Items: <%= ["apple", "banana"] %>
-      """
+  test "code and markup context supported" do
+    template = """
+    #text(font: <%= "Helvetica Neue" %>)[
+      = Background
+      In the case of <%| "glaciers" %>, fluid
+      dynamics principles can be used
+      to understand how the movement
+      and behaviour of the ice is
+      influenced by factors such as
+      temperature, pressure, and the
+      presence of other fluids (such as
+      water).
+    ]
+    """
 
-      expected = """
-      Name: "Alice"
-      Age: 30
-      Items: ("apple", "banana")
-      """
+    assert """
+           #text(font: "Helvetica Neue")[
+             = Background
+             In the case of glaciers, fluid
+             dynamics principles can be used
+             to understand how the movement
+             and behaviour of the ice is
+             influenced by factors such as
+             temperature, pressure, and the
+             presence of other fluids (such as
+             water).
+           ]
+           """ = EEx.eval_string(template, [], engine: Typst.Engine)
+  end
 
-      assert expected == EEx.eval_string(template, [], engine: Typst.Engine)
-    end
+  test "works with assigns" do
+    template = """
+    #text(font: <%= @font %>)[
+      = Introduction
+      In this report, we will explore the
+      various factors that influence _<%| @topic %>_
+      in glaciers and how they
+      contribute to the formation and
+      behaviour of these natural structures.
+    ]
+    """
 
-    test "works with variable bindings" do
-      template = """
-      User: <%= name %>
-      Score: <%= score %>
-      """
+    assigns = [font: "Helvetica Neue", topic: "fluid dynamics"]
 
-      result = EEx.eval_string(template, [name: "Bob", score: 100], engine: Typst.Engine)
-      assert ~s|User: "Bob"\nScore: 100\n| = result
-    end
+    assert """
+           #text(font: "Helvetica Neue")[
+             = Introduction
+             In this report, we will explore the
+             various factors that influence _fluid dynamics_
+             in glaciers and how they
+             contribute to the formation and
+             behaviour of these natural structures.
+           ]
+           """ = EEx.eval_string(template, [assigns: assigns], engine: Typst.Engine)
+  end
 
-    test "handles complex nested data structures" do
-      data = %{
-        "title" => "My Document",
-        "sections" => [
-          %{"name" => "Introduction", "pages" => 5},
-          %{"name" => "Content", "pages" => 20}
-        ]
-      }
+  test "raises on missing assign" do
+    template = """
+    #text(font: <%= @font %>)[
+      = Introduction
+      In this report, we will explore the
+      various factors that influence _<%| @topic %>_
+      in glaciers and how they
+      contribute to the formation and
+      behaviour of these natural structures.
+    ]
+    """
 
-      template = """
-      Document: <%= data %>
-      """
+    assigns = [topic: "fluid dynamics"]
 
-      result = EEx.eval_string(template, [data: data], engine: Typst.Engine)
-      assert String.starts_with?(result, "Document: (")
-      assert String.contains?(result, "title:")
-      assert String.contains?(result, "sections:")
-    end
+    assert_raise ArgumentError,
+                 """
+                 assign @font not available in template.
 
-    test "preserves whitespace and formatting outside interpolations" do
-      template = """
-      = Title
+                 Please make sure all proper assigns have been set. If this
+                 is a child template, ensure assigns are given explicitly by
+                 the parent template as they are not automatically forwarded.
 
-      This is a paragraph with <%= "interpolated" %> content.
+                 Available assigns: [:topic]
+                 """,
+                 fn ->
+                   EEx.eval_string(template, [assigns: assigns], engine: Typst.Engine)
+                 end
+  end
 
-      - Item 1: <%= 42 %>
-      - Item 2: <%= "test" %>
-      """
+  test "handles complex nested data structures" do
+    data = %{
+      "title" => "My Document",
+      "sections" => [
+        %{"name" => "Introduction", "pages" => 5},
+        %{"name" => "Content", "pages" => 20}
+      ]
+    }
 
-      result = EEx.eval_string(template, [], engine: Typst.Engine)
+    template = """
+    Document: <%= @data %>
+    """
 
-      assert String.contains?(result, "= Title")
-      assert String.contains?(result, "This is a paragraph with \"interpolated\" content.")
-      assert String.contains?(result, "- Item 1: 42")
-      assert String.contains?(result, "- Item 2: \"test\"")
-    end
+    result = EEx.eval_string(template, [assigns: [data: data]], engine: Typst.Engine)
+    assert String.starts_with?(result, "Document: (")
+    assert String.contains?(result, "title:")
+    assert String.contains?(result, "sections:")
+  end
+
+  test "preserves whitespace and formatting outside interpolations" do
+    template = """
+    = Title
+
+    This is a paragraph with <%= "interpolated" %> content.
+
+    - Item 1: <%= 42 %>
+    - Item 2: <%= "test" %>
+    """
+
+    result = EEx.eval_string(template, [], engine: Typst.Engine)
+
+    assert String.contains?(result, "= Title")
+    assert String.contains?(result, "This is a paragraph with \"interpolated\" content.")
+    assert String.contains?(result, "- Item 1: 42")
+    assert String.contains?(result, "- Item 2: \"test\"")
   end
 end
