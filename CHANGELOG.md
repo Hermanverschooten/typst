@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.1.7] - 2025-09-21
+
+Allow rendering to both PDF and PNG. Thank you [gworkman](https://github.com/gworkman).
+
+## [v0.1.6] - 2025-09-20
+
+Expand errors to return the location and source code.
+
 ## [v0.1.5] - 2025-06-09
 
 Allow setting the root folder where Typst can find it's external assets. Thank you [jbowtie](https://github.com/jbowtie).
@@ -32,6 +40,13 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.1.7...HEAD
 [v0.1.0]: https://github.com/Hermanverschooten/typst/releases/tag/v0.1.0
+[v0.1.1]: https://github.com/Hermanverschooten/typst/releases/tag/v0.1.1...v0.1.0
+[v0.1.2]: https://github.com/Hermanverschooten/typst/releases/tag/v0.1.2...v0.1.1
+[v0.1.3]: https://github.com/Hermanverschooten/typst/releases/tag/v0.1.3...v0.1.2
+[v0.1.4]: https://github.com/Hermanverschooten/typst/releases/tag/v0.1.4...v0.1.3
+[v0.1.5]: https://github.com/Hermanverschooten/typst/releases/tag/v0.1.5...v0.1.4
+[v0.1.6]: https://github.com/Hermanverschooten/typst/releases/tag/v0.1.6...v0.1.5
+[v0.1.7]: https://github.com/Hermanverschooten/typst/releases/tag/v0.1.7...v0.1.6
 

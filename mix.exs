@@ -2,7 +2,7 @@ defmodule Typst.MixProject do
   use Mix.Project
 
   @source_url "http://github.com/Hermanverschooten/typst"
-  @version "0.1.6"
+  @version "0.1.7"
 
   @nerves_rust_target_triple_mapping %{
     "armv6-nerves-linux-gnueabihf": "arm-unknown-linux-gnueabihf",
