@@ -17,8 +17,28 @@ defmodule TypstTest do
     for image <- ["image.jpg", "image.png", "logo.svg"] do
       test "#{image}" do
         file = Path.join(["test", "assets", unquote(image)]) |> File.read!()
-        assert {:ok, _pdf} = Typst.render_to_pdf(~S|#image(read("image", encoding: none))|, [], assets: [image: file])
+
+        assert {:ok, _pdf} =
+                 Typst.render_to_pdf(~S|#image(read("image", encoding: none))|, [],
+                   assets: [image: file]
+                 )
       end
+    end
+  end
+
+  describe "errors" do
+    test "error message on invalid template" do
+      template = ~S"#image("
+
+      expected_error =
+        """
+        [line 1:7] unclosed delimiter
+          Source: #image(
+                        ^
+        """
+        |> String.trim_trailing()
+
+      assert {:error, ^expected_error} = Typst.render_to_pdf(template)
     end
   end
 end
