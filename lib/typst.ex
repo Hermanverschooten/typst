@@ -30,16 +30,35 @@ defmodule Typst do
     EEx.eval_string(typst_markup, bindings)
   end
 
-  @type typst_opt :: {:extra_fonts, list(String.t())}
+  @type typst_opt ::
+          {:extra_fonts, list(String.t())}
+          | {:root_dir, String.t()}
+          | {:pixels_per_pt, number()}
+          | {:assets, Keyword.t() | Map.t() | list({String.t(), binary()})}
 
   @spec render_to_pdf(String.t(), list(formattable()), list(typst_opt())) ::
           {:ok, binary()} | {:error, String.t()}
   @doc """
   Converts a given piece of typst markup to a PDF binary.
 
+  ## Options
+
+  This function takes the following options:
+
+    * `:extra_fonts` - a list of directories to seatch for fonts
+
+    * `:root_dir` - the root directory for typst, where all filepaths are resolved from. defaults to the current directory
+
+    * `:assets` - a list of `{"name", binary()}` or enumerable to store blobs in the typst virtual file system
+
   ## Examples
 
       iex> {:ok, pdf} = Typst.render_to_pdf("= test\\n<%= name %>", name: "John")
+      iex> is_binary(pdf)
+      true
+
+      iex> svg = ~S|<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>|
+      iex> {:ok, pdf} = Typst.render_to_pdf(~S|#image(read("logo", encoding: none), width: 6cm)|, [], assets: [logo: svg])
       iex> is_binary(pdf)
       true
 
@@ -48,9 +67,13 @@ defmodule Typst do
     extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
     root_dir = Keyword.get(opts, :root_dir, ".")
 
+    assets =
+      Keyword.get(opts, :assets, [])
+      |> Enum.map(fn {key, val} -> {to_string(key), val} end)
+
     markup = render_to_string(typst_markup, bindings)
 
-    Typst.NIF.compile_pdf(markup, root_dir, extra_fonts)
+    Typst.NIF.compile_pdf(markup, root_dir, extra_fonts, assets)
   end
 
   @spec render_to_pdf!(String.t(), list(formattable()), list(typst_opt())) :: binary()
@@ -68,6 +91,18 @@ defmodule Typst do
           {:ok, list(binary())} | {:error, String.t()}
   @doc """
   Converts a given piece of typst markup to a PNG binary, one per each page.
+  #
+  ## Options
+
+  This function takes the following options:
+
+    * `:extra_fonts` - a list of directories to seatch for fonts
+
+    * `:root_dir` - the root directory for typst, where all filepaths are resolved from. defaults to the current directory
+
+    * `:pixels_per_pt` - specifies how many pixels represent one pt unit
+
+    * `:assets` - a list of `{"name", binary()}` or enumerable to store blobs in the typst virtual file system
 
   ## Examples
 
@@ -81,9 +116,13 @@ defmodule Typst do
     root_dir = Keyword.get(opts, :root_dir, ".")
     pixels_per_pt = Keyword.get(opts, :pixels_per_pt, 1.0)
 
+    assets =
+      Keyword.get(opts, :assets, [])
+      |> Enum.map(fn {key, val} -> {to_string(key), val} end)
+
     markup = render_to_string(typst_markup, bindings)
 
-    Typst.NIF.compile_png(markup, root_dir, extra_fonts, pixels_per_pt)
+    Typst.NIF.compile_png(markup, root_dir, extra_fonts, pixels_per_pt, assets)
   end
 
   @spec render_to_png!(String.t(), list(formattable()), list(typst_opt())) :: list(binary())
