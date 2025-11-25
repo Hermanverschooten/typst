@@ -21,16 +21,17 @@ jobs:
       matrix:
         nif: ["2.15"]
         job:
-          - { target: arm-unknown-linux-gnueabihf , os: ubuntu-22.04 , use-cross: true }
-          - { target: aarch64-unknown-linux-gnu   , os: ubuntu-22.04 , use-cross: true , rustflags: "-C lto=off" }
-          - { target: aarch64-unknown-linux-musl  , os: ubuntu-22.04 , use-cross: true , rustflags: "-C lto=off" }
-          - { target: aarch64-apple-darwin        , os: macos-14      }
-          - { target: riscv64gc-unknown-linux-gnu , os: ubuntu-22.04 , use-cross: true }
-          - { target: x86_64-apple-darwin         , os: macos-14      }
-          - { target: x86_64-unknown-linux-gnu    , os: ubuntu-22.04  }
-          - { target: x86_64-unknown-linux-musl   , os: ubuntu-22.04 , use-cross: true }
-          - { target: x86_64-pc-windows-gnu       , os: windows-2022  }
-          - { target: x86_64-pc-windows-msvc      , os: windows-2022  }
+          # Temporarily only building ARM64 Linux targets for testing
+          - { target: aarch64-unknown-linux-gnu   , os: ubuntu-22.04 , use-cross: true }
+          - { target: aarch64-unknown-linux-musl  , os: ubuntu-22.04 , use-cross: true }
+          # - { target: arm-unknown-linux-gnueabihf , os: ubuntu-22.04 , use-cross: true }
+          # - { target: aarch64-apple-darwin        , os: macos-14      }
+          # - { target: riscv64gc-unknown-linux-gnu , os: ubuntu-22.04 , use-cross: true }
+          # - { target: x86_64-apple-darwin         , os: macos-14      }
+          # - { target: x86_64-unknown-linux-gnu    , os: ubuntu-22.04  }
+          # - { target: x86_64-unknown-linux-musl   , os: ubuntu-22.04 , use-cross: true }
+          # - { target: x86_64-pc-windows-gnu       , os: windows-2022  }
+          # - { target: x86_64-pc-windows-msvc      , os: windows-2022  }
 
     steps:
       - name: Checkout source code
@@ -51,7 +52,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.90.0  # Specify your desired Rust version
+          toolchain: 1.88.0  # Specify your desired Rust version
           targets: ${{ matrix.job.target }}
 
       - uses: Swatinem/rust-cache@v2
