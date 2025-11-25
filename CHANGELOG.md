@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.2.0] - 2025-10-25
+
+Updated Typst to version 0.14 and added support for virtual files. Thank you [kevinschweikert](https://github.com/kevinschweikert).
+
 ## [v0.1.7] - 2025-09-21
 
 Allow rendering to both PDF and PNG. Thank you [gworkman](https://github.com/gworkman).
@@ -40,7 +44,8 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.2.0...HEAD
+[v0.2.0]: https://github.com/Hermanverschooten/typst/releases/tag/v0.2.0
 [v0.1.0]: https://github.com/Hermanverschooten/typst/releases/tag/v0.1.0
 [v0.1.1]: https://github.com/Hermanverschooten/typst/releases/tag/v0.1.1
 [v0.1.2]: https://github.com/Hermanverschooten/typst/releases/tag/v0.1.2
