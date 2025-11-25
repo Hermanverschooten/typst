@@ -14,7 +14,7 @@ use typst::syntax::package::PackageSpec;
 use typst::syntax::{FileId, Source, VirtualPath};
 use typst::text::{Font, FontBook};
 use typst::utils::LazyHash;
-use typst::Library;
+use typst::{Library, LibraryExt};
 use typst_kit::fonts::{FontSlot, Fonts};
 use typst_pdf::PdfOptions;
 
@@ -325,22 +325,22 @@ fn collect_typst_errors(errors: EcoVec<SourceDiagnostic>, source: Source) -> Str
 
         let mut error_msg = format!("Error: {}", error.message);
 
-        // Try to get source location information
         if !span.is_detached() && span.id() == Some(source.id()) {
             if let Some(range) = source.range(span) {
-                let line = source.byte_to_line(range.start).unwrap_or(0) + 1;
-                let column = source.byte_to_column(range.start).unwrap_or(0) + 1;
+                let lines = source.lines();
+                let line = lines.byte_to_line(range.start).unwrap_or(0) + 1;
+                let column = lines.byte_to_column(range.start).unwrap_or(0) + 1;
 
                 error_msg = format!("[line {}:{}] {}", line, column, error.message);
 
                 // Try to get the actual source line for context
-                if let Some(line_range) = source.line_to_range(line - 1) {
+                if let Some(line_range) = lines.line_to_range(line - 1) {
                     let source_line = &source.text()[line_range];
                     let trimmed_line = source_line.trim_end();
 
                     // Calculate the position of the error marker
                     let leading_spaces = source_line.len() - source_line.trim_start().len();
-                    let marker_pos = column.saturating_sub(1).saturating_sub(leading_spaces);
+                    let marker_pos = column.saturating_sub(leading_spaces);
 
                     error_msg = format!(
                         "{}\n  Source: {}\n         {}{}",

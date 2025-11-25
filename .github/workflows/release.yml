@@ -51,7 +51,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.86.0  # Specify your desired Rust version
+          toolchain: 1.91.1  # Specify your desired Rust version
           targets: ${{ matrix.job.target }}
 
       - uses: Swatinem/rust-cache@v2
