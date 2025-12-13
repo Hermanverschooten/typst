@@ -15,10 +15,10 @@ rustler = { version = "0.36", default-features = false, features = ["derive"] }
 tar = "0.4.43"
 time = "0.3.36"
 ttf-parser = "0.25.0"
-typst = "0.14"
-typst-kit = { version = "0.14", default-features = false, features = [ "embed-fonts" ] }
-typst-pdf = "0.14"
-typst-render = "0.14"
+typst = "0.14.2"
+typst-kit = { version = "0.14.2", default-features = false, features = [ "embed-fonts" ] }
+typst-pdf = "0.14.2"
+typst-render = "0.14.2"
 ureq = "2.10.1"
 zune-inflate = "0.2.54"
 
