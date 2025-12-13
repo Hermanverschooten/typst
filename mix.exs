@@ -2,7 +2,7 @@ defmodule Typst.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/Hermanverschooten/typst"
-  @version "0.2.1"
+  @version "0.2.2"
 
   @nerves_rust_target_triple_mapping %{
     "armv6-nerves-linux-gnueabihf": "arm-unknown-linux-gnueabihf",
@@ -61,7 +61,7 @@ defmodule Typst.MixProject do
     [
       {:rustler, ">= 0.0.0", optional: true},
       {:rustler_precompiled, "~> 0.8"},
-      {:ex_doc, "~> 0.34", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.39", only: :dev, runtime: false}
     ]
   end
 
