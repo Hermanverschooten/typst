@@ -39,7 +39,7 @@ defmodule Typst do
           {:extra_fonts, list(String.t())}
           | {:root_dir, String.t()}
           | {:pixels_per_pt, number()}
-          | {:assets, Keyword.t() | Map.t() | list({String.t(), binary()})}
+          | {:assets, Keyword.t() | map() | list({String.t(), binary()})}
           | {:trim, boolean()}
 
   @spec render_to_pdf(String.t(), list(formattable()), list(typst_opt())) ::
