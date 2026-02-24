@@ -13,11 +13,15 @@ defmodule Typst do
 
   @type formattable :: {atom, any}
 
-  @spec render_to_string(String.t(), list(formattable)) :: String.t()
+  @spec render_to_string(String.t(), list(formattable), list({:trim, boolean()})) :: String.t()
 
   @doc """
   Formats the given markup template with the given bindings, mostly
   useful for inspecting and debugging.
+
+  ## Options
+
+    * `:trim` - when `true`, trims blank lines left by EEx tags. Defaults to `false`.
 
   ## Examples
 
@@ -26,8 +30,9 @@ defmodule Typst do
 
   """
 
-  def render_to_string(typst_markup, bindings \\ []) do
-    EEx.eval_string(typst_markup, bindings)
+  def render_to_string(typst_markup, bindings \\ [], opts \\ []) do
+    trim = Keyword.get(opts, :trim, false)
+    EEx.eval_string(typst_markup, bindings, trim: trim)
   end
 
   @type typst_opt ::
@@ -35,6 +40,7 @@ defmodule Typst do
           | {:root_dir, String.t()}
           | {:pixels_per_pt, number()}
           | {:assets, Keyword.t() | Map.t() | list({String.t(), binary()})}
+          | {:trim, boolean()}
 
   @spec render_to_pdf(String.t(), list(formattable()), list(typst_opt())) ::
           {:ok, binary()} | {:error, String.t()}
@@ -50,6 +56,8 @@ defmodule Typst do
     * `:root_dir` - the root directory for typst, where all filepaths are resolved from. defaults to the current directory
 
     * `:assets` - a list of `{"name", binary()}` or enumerable to store blobs in the typst virtual file system
+
+    * `:trim` - when `true`, trims blank lines left by EEx tags. Defaults to `false`.
 
   ## Examples
 
@@ -71,7 +79,8 @@ defmodule Typst do
       Keyword.get(opts, :assets, [])
       |> Enum.map(fn {key, val} -> {to_string(key), val} end)
 
-    markup = render_to_string(typst_markup, bindings)
+    trim = Keyword.get(opts, :trim, false)
+    markup = render_to_string(typst_markup, bindings, trim: trim)
 
     Typst.NIF.compile_pdf(markup, root_dir, extra_fonts, assets)
   end
@@ -104,6 +113,8 @@ defmodule Typst do
 
     * `:assets` - a list of `{"name", binary()}` or enumerable to store blobs in the typst virtual file system
 
+    * `:trim` - when `true`, trims blank lines left by EEx tags. Defaults to `false`.
+
   ## Examples
 
       iex> {:ok, pngs} = Typst.render_to_png("= test\\n<%= name %>", name: "John")
@@ -120,7 +131,8 @@ defmodule Typst do
       Keyword.get(opts, :assets, [])
       |> Enum.map(fn {key, val} -> {to_string(key), val} end)
 
-    markup = render_to_string(typst_markup, bindings)
+    trim = Keyword.get(opts, :trim, false)
+    markup = render_to_string(typst_markup, bindings, trim: trim)
 
     Typst.NIF.compile_png(markup, root_dir, extra_fonts, pixels_per_pt, assets)
   end

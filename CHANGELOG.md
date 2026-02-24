@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.2.3] - 2026-02-24
+
+Added `:trim` option to `render_to_string/3`, `render_to_pdf/3`, and `render_to_png/3` to remove blank lines left by EEx tags. Defaults to `false`.
+
+Updated dependencies: ex_doc 0.39.3 → 0.40.1, rustler 0.37.1 → 0.37.3.
+
 ## [v0.2.2] - 2025-12-13
 
 Updated Typst to version 0.14.2 which includes a critical security fix for a use-after-free bug in the wasmi WebAssembly runtime.
@@ -53,7 +59,8 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.2.3...HEAD
+[v0.2.3]: https://github.com/Hermanverschooten/typst/compare/v0.2.2...v0.2.3
 [v0.2.2]: https://github.com/Hermanverschooten/typst/compare/v0.2.1...v0.2.2
 [v0.2.1]: https://github.com/Hermanverschooten/typst/compare/v0.2.0...v0.2.1
 [v0.2.0]: https://github.com/Hermanverschooten/typst/releases/tag/v0.2.0
