@@ -26,6 +26,30 @@ defmodule TypstTest do
     end
   end
 
+  describe "font caching" do
+    test "cache_fonts: false still produces valid output" do
+      {:ok, pdf} = Typst.render_to_pdf("= cached", [], cache_fonts: false)
+      assert <<37, 80, 68, 70, 45, _rest::binary>> = pdf
+
+      {:ok, [png]} = Typst.render_to_png("= cached", [], cache_fonts: false)
+      assert <<137, 80, 78, 71, 13, 10, 26, 10, _rest::binary>> = png
+    end
+
+    test "cached calls are faster than uncached" do
+      markup = "= benchmark"
+
+      Typst.render_to_pdf(markup)
+
+      {cached_us, {:ok, _}} = :timer.tc(fn -> Typst.render_to_pdf(markup) end)
+
+      {uncached_us, {:ok, _}} =
+        :timer.tc(fn -> Typst.render_to_pdf(markup, [], cache_fonts: false) end)
+
+      IO.puts("\n  Font caching: cached=#{cached_us}µs uncached=#{uncached_us}µs")
+      assert cached_us < uncached_us
+    end
+  end
+
   describe "errors" do
     test "error message on invalid template" do
       template = ~S"#image("
