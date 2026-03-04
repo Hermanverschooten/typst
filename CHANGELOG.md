@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.2.4] - 2026-03-04
+
+Fix memory leak caused by never evicting the comemo memoization cache after Typst compilation.
+
 ## [v0.2.3] - 2026-02-24
 
 Added `:trim` option to `render_to_string/3`, `render_to_pdf/3`, and `render_to_png/3` to remove blank lines left by EEx tags. Defaults to `false`.
@@ -59,7 +63,8 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.2.3...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.2.4...HEAD
+[v0.2.4]: https://github.com/Hermanverschooten/typst/compare/v0.2.3...v0.2.4
 [v0.2.3]: https://github.com/Hermanverschooten/typst/compare/v0.2.2...v0.2.3
 [v0.2.2]: https://github.com/Hermanverschooten/typst/compare/v0.2.1...v0.2.2
 [v0.2.1]: https://github.com/Hermanverschooten/typst/compare/v0.2.0...v0.2.1

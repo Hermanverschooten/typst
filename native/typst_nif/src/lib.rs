@@ -271,6 +271,8 @@ fn compile_pdf<'a>(
         .output
         .map_err(|e| collect_typst_errors(e, world.source))?;
 
+    comemo::evict(30);
+
     let pdf_bytes =
         typst_pdf::pdf(&document, &PdfOptions::default()).map_err(|e| format!("{:#?}", e))?;
 
@@ -300,6 +302,8 @@ fn compile_png<'a>(
     let document: PagedDocument = typst::compile(&world)
         .output
         .map_err(|e| collect_typst_errors(e, world.source))?;
+
+    comemo::evict(30);
 
     let pngs: Result<Vec<Binary>, String> = document
         .pages
