@@ -1,7 +1,6 @@
 use std::collections::HashMap;
-// use std::fs;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, LazyLock, Mutex};
 
 use rustler::{Binary, Env, NewBinary, Term};
 use typst::diag::{
@@ -18,6 +17,14 @@ use typst::{Library, LibraryExt};
 use typst_kit::fonts::{FontSlot, Fonts};
 use typst_pdf::PdfOptions;
 
+struct CachedFonts {
+    key: Vec<String>,
+    book: Arc<LazyHash<FontBook>>,
+    fonts: Arc<Vec<FontSlot>>,
+}
+
+static FONT_CACHE: LazyLock<Mutex<Option<CachedFonts>>> = LazyLock::new(|| Mutex::new(None));
+
 /// Main interface that determines the environment for Typst.
 pub struct TypstNifWorld {
     /// Root path to which files will be resolved.
@@ -30,10 +37,10 @@ pub struct TypstNifWorld {
     library: LazyHash<Library>,
 
     /// Metadata about all known fonts.
-    book: LazyHash<FontBook>,
+    book: Arc<LazyHash<FontBook>>,
 
     /// Metadata about all known fonts.
-    fonts: Vec<FontSlot>,
+    fonts: Arc<Vec<FontSlot>>,
 
     /// Map of all known files.
     files: Arc<Mutex<HashMap<FileId, FileEntry>>>,
@@ -49,18 +56,48 @@ pub struct TypstNifWorld {
 }
 
 impl TypstNifWorld {
-    pub fn new(root: String, source: String, extra_fonts: Vec<String>) -> Self {
+    pub fn new(root: String, source: String, extra_fonts: Vec<String>, cache_fonts: bool) -> Self {
         let root = PathBuf::from(root);
-        // let fonts = fonts(&root);
-        let fonts = Fonts::searcher()
-            .include_system_fonts(true)
-            .search_with(extra_fonts);
+
+        let mut sorted_key = extra_fonts.clone();
+        sorted_key.sort();
+
+        let (book, fonts) = if cache_fonts {
+            let mut cache = FONT_CACHE.lock().unwrap();
+
+            let needs_scan = match cache.as_ref() {
+                Some(cached) if cached.key == sorted_key => false,
+                _ => true,
+            };
+
+            if needs_scan {
+                let scanned = Fonts::searcher()
+                    .include_system_fonts(true)
+                    .search_with(extra_fonts);
+                *cache = Some(CachedFonts {
+                    key: sorted_key,
+                    book: Arc::new(LazyHash::new(scanned.book)),
+                    fonts: Arc::new(scanned.fonts),
+                });
+            }
+
+            let cached = cache.as_ref().unwrap();
+            (Arc::clone(&cached.book), Arc::clone(&cached.fonts))
+        } else {
+            let scanned = Fonts::searcher()
+                .include_system_fonts(true)
+                .search_with(extra_fonts);
+            (
+                Arc::new(LazyHash::new(scanned.book)),
+                Arc::new(scanned.fonts),
+            )
+        };
 
         Self {
             library: LazyHash::new(Library::default()),
-            book: LazyHash::new(fonts.book),
+            book,
             root,
-            fonts: fonts.fonts,
+            fonts,
             source: Source::detached(source),
             time: time::OffsetDateTime::now_utc(),
             cache_directory: std::env::var_os("CACHE_DIRECTORY")
@@ -258,8 +295,9 @@ fn compile_pdf<'a>(
     root_dir: String,
     extra_fonts: Vec<String>,
     assets: Vec<(String, Binary<'a>)>,
+    cache_fonts: bool,
 ) -> Result<Term<'a>, String> {
-    let world = TypstNifWorld::new(root_dir, markup, extra_fonts);
+    let world = TypstNifWorld::new(root_dir, markup, extra_fonts, cache_fonts);
 
     for (vpath, bin) in assets {
         world
@@ -290,8 +328,9 @@ fn compile_png<'a>(
     extra_fonts: Vec<String>,
     pixels_per_pt: f32,
     assets: Vec<(String, Binary<'a>)>,
+    cache_fonts: bool,
 ) -> Result<Vec<Binary<'a>>, String> {
-    let world = TypstNifWorld::new(root_dir, markup, extra_fonts);
+    let world = TypstNifWorld::new(root_dir, markup, extra_fonts, cache_fonts);
 
     for (vpath, bin) in assets {
         world

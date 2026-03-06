@@ -41,6 +41,7 @@ defmodule Typst do
           | {:pixels_per_pt, number()}
           | {:assets, Keyword.t() | map() | list({String.t(), binary()})}
           | {:trim, boolean()}
+          | {:cache_fonts, boolean()}
 
   @spec render_to_pdf(String.t(), list(formattable()), list(typst_opt())) ::
           {:ok, binary()} | {:error, String.t()}
@@ -59,6 +60,8 @@ defmodule Typst do
 
     * `:trim` - when `true`, trims blank lines left by EEx tags. Defaults to `false`.
 
+    * `:cache_fonts` - when `true`, caches scanned fonts across calls. Defaults to `true`.
+
   ## Examples
 
       iex> {:ok, pdf} = Typst.render_to_pdf("= test\\n<%= name %>", name: "John")
@@ -74,6 +77,7 @@ defmodule Typst do
   def render_to_pdf(typst_markup, bindings \\ [], opts \\ []) do
     extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
     root_dir = Keyword.get(opts, :root_dir, ".")
+    cache_fonts = Keyword.get(opts, :cache_fonts, true)
 
     assets =
       Keyword.get(opts, :assets, [])
@@ -82,7 +86,7 @@ defmodule Typst do
     trim = Keyword.get(opts, :trim, false)
     markup = render_to_string(typst_markup, bindings, trim: trim)
 
-    Typst.NIF.compile_pdf(markup, root_dir, extra_fonts, assets)
+    Typst.NIF.compile_pdf(markup, root_dir, extra_fonts, assets, cache_fonts)
   end
 
   @spec render_to_pdf!(String.t(), list(formattable()), list(typst_opt())) :: binary()
@@ -115,6 +119,8 @@ defmodule Typst do
 
     * `:trim` - when `true`, trims blank lines left by EEx tags. Defaults to `false`.
 
+    * `:cache_fonts` - when `true`, caches scanned fonts across calls. Defaults to `true`.
+
   ## Examples
 
       iex> {:ok, pngs} = Typst.render_to_png("= test\\n<%= name %>", name: "John")
@@ -126,6 +132,7 @@ defmodule Typst do
     extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
     root_dir = Keyword.get(opts, :root_dir, ".")
     pixels_per_pt = Keyword.get(opts, :pixels_per_pt, 1.0)
+    cache_fonts = Keyword.get(opts, :cache_fonts, true)
 
     assets =
       Keyword.get(opts, :assets, [])
@@ -134,7 +141,7 @@ defmodule Typst do
     trim = Keyword.get(opts, :trim, false)
     markup = render_to_string(typst_markup, bindings, trim: trim)
 
-    Typst.NIF.compile_png(markup, root_dir, extra_fonts, pixels_per_pt, assets)
+    Typst.NIF.compile_png(markup, root_dir, extra_fonts, pixels_per_pt, assets, cache_fonts)
   end
 
   @spec render_to_png!(String.t(), list(formattable()), list(typst_opt())) :: list(binary())
