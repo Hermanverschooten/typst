@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.2.6] - 2026-03-06
+
+Add font caching to avoid redundant font scanning across calls, improving performance for repeated renders.
+
 ## [v0.2.5] - 2026-03-04
 
 Released due to a problem with source being out-of-sync with the released version.
@@ -67,7 +71,9 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.2.4...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.2.6...HEAD
+[v0.2.6]: https://github.com/Hermanverschooten/typst/compare/v0.2.5...v0.2.6
+[v0.2.5]: https://github.com/Hermanverschooten/typst/compare/v0.2.4...v0.2.5
 [v0.2.4]: https://github.com/Hermanverschooten/typst/compare/v0.2.3...v0.2.4
 [v0.2.3]: https://github.com/Hermanverschooten/typst/compare/v0.2.2...v0.2.3
 [v0.2.2]: https://github.com/Hermanverschooten/typst/compare/v0.2.1...v0.2.2
