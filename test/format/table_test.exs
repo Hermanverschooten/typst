@@ -78,6 +78,19 @@ defmodule Typst.Format.TableTest do
     {:ok, _pdf} = Typst.render_to_pdf("<%= header %>", header: header)
   end
 
+  test "header without repeat" do
+    alias Typst.Format.Table.Header
+
+    header =
+      %Header{content: ["foo", "bar"]}
+
+    expected =
+      "table.header([foo], [bar])"
+
+    assert expected == Typst.render_to_string("<%= header %>", header: header)
+    {:ok, _pdf} = Typst.render_to_pdf("<%= header %>", header: header)
+  end
+
   test "footer" do
     alias Typst.Format.Table.Footer
 
@@ -86,6 +99,19 @@ defmodule Typst.Format.TableTest do
 
     expected =
       "table.footer(repeat: false, [foo], [bar])"
+
+    assert expected == Typst.render_to_string("<%= footer %>", footer: footer)
+    {:ok, _pdf} = Typst.render_to_pdf("<%= footer %>", footer: footer)
+  end
+
+  test "footer without repeat" do
+    alias Typst.Format.Table.Footer
+
+    footer =
+      %Footer{content: ["foo", "bar"]}
+
+    expected =
+      "table.footer([foo], [bar])"
 
     assert expected == Typst.render_to_string("<%= footer %>", footer: footer)
     {:ok, _pdf} = Typst.render_to_pdf("<%= footer %>", footer: footer)
