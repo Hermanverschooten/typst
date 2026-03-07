@@ -2681,7 +2681,7 @@ dependencies = [
 
 [[package]]
 name = "typst_nif"
-version = "0.2.0"
+version = "0.2.7"
 dependencies = [
  "comemo 0.4.0",
  "rustler",

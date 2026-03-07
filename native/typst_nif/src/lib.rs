@@ -30,6 +30,12 @@ static LIBRARY_CACHE: LazyLock<LazyHash<Library>> =
 
 static HTTP_AGENT: LazyLock<ureq::Agent> = LazyLock::new(ureq::Agent::new);
 
+static CACHE_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
+    std::env::var_os("CACHE_DIRECTORY")
+        .map(|os_path| os_path.into())
+        .unwrap_or(std::env::temp_dir())
+});
+
 /// Main interface that determines the environment for Typst.
 pub struct TypstNifWorld {
     /// Root path to which files will be resolved.
@@ -98,9 +104,7 @@ impl TypstNifWorld {
             fonts,
             source: Source::detached(source),
             time: time::OffsetDateTime::now_utc(),
-            cache_directory: std::env::var_os("CACHE_DIRECTORY")
-                .map(|os_path| os_path.into())
-                .unwrap_or(std::env::temp_dir()),
+            cache_directory: CACHE_DIRECTORY.clone(),
             files: Arc::new(Mutex::new(HashMap::new())),
         }
     }
@@ -284,7 +288,7 @@ fn http_successful(status: u16) -> bool {
     status / 100 == 2
 }
 
-#[rustler::nif]
+#[rustler::nif(schedule = "DirtyCpu")]
 fn compile_pdf<'a>(
     env: Env<'a>,
     markup: String,
@@ -316,7 +320,7 @@ fn compile_pdf<'a>(
     return Ok(binary.into());
 }
 
-#[rustler::nif]
+#[rustler::nif(schedule = "DirtyCpu")]
 fn compile_png<'a>(
     env: Env<'a>,
     markup: String,

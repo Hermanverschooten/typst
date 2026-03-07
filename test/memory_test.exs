@@ -9,7 +9,7 @@ defmodule Typst.MemoryTest do
 
   defp rss_mb do
     {output, 0} = System.cmd("ps", ["-o", "rss=", "-p", "#{System.pid()}"])
-    (output |> String.trim() |> String.to_integer()) / 1024 |> Float.round(1)
+    ((output |> String.trim() |> String.to_integer()) / 1024) |> Float.round(1)
   end
 
   defp run_iterations(iterations, fun) do

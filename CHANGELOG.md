@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.2.7] - 2026-03-07
+
+- Cache the Typst standard library, HTTP agent and cache directory as global statics to further reduce memory usage and improve performance across repeated renders.
+- Run NIF functions on dirty CPU schedulers to prevent blocking the BEAM.
+
 ## [v0.2.6] - 2026-03-06
 
 Add font caching to avoid redundant font scanning across calls, improving performance for repeated renders.
@@ -71,7 +76,8 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.2.6...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.2.7...HEAD
+[v0.2.7]: https://github.com/Hermanverschooten/typst/compare/v0.2.6...v0.2.7
 [v0.2.6]: https://github.com/Hermanverschooten/typst/compare/v0.2.5...v0.2.6
 [v0.2.5]: https://github.com/Hermanverschooten/typst/compare/v0.2.4...v0.2.5
 [v0.2.4]: https://github.com/Hermanverschooten/typst/compare/v0.2.3...v0.2.4
