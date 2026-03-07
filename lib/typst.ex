@@ -11,6 +11,33 @@ defmodule Typst do
 
   @embedded_fonts [Path.join(:code.priv_dir(:typst), "fonts")]
 
+  @doc ~S"""
+  Sigil for compile-time Typst templates using `Typst.Engine`.
+
+  Uses `<%= %>` for code context (`Typst.Code`) and `<%| %>` for
+  markup context (`Typst.Markup`). Supports `@variable` assigns syntax.
+
+  Requires an `assigns` variable to be in scope.
+
+  ## Examples
+
+      import Typst, only: :sigils
+
+      assigns = %{name: "World", font: "Roboto"}
+      result = ~TYPST|#text(font: <%= @font %>)[<%| @name %>]|
+      assert result == ~S|#text(font: "Roboto")[World]|
+
+  """
+  defmacro sigil_TYPST(term, _modifiers) do
+    {literal, _meta} = extract_literal(term)
+
+    EEx.compile_string(literal, engine: Typst.Engine)
+  end
+
+  defp extract_literal({:<<>>, _meta, [literal]}) when is_binary(literal), do: {literal, []}
+  defp extract_literal({:<<>>, _meta, _parts} = term), do: {term, []}
+  defp extract_literal(term), do: {term, []}
+
   @type formattable :: {atom, any}
 
   @spec render_to_string(String.t(), list(formattable), list({:trim, boolean()})) :: String.t()
