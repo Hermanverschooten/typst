@@ -28,6 +28,22 @@ defprotocol Typst.Code do
   | Regex | `~r/foo/` | `regex("foo")` |
   | Decimal | `Decimal.new("1.5")` | `decimal("1.5")` (requires `:decimal` dependency) |
 
+  ## Custom implementations
+
+  Both `Typst.Code` and `Typst.Markup` are protocols, so you can implement
+  them for your own types. For example, if you need locale-aware number
+  formatting in markup context, format the value before passing it in:
+
+      <%| MyApp.Cldr.Number.to_string!(@price) %>
+
+  Or implement the protocol for a wrapper struct:
+
+      defimpl Typst.Code, for: MyApp.Currency do
+        def encode(%{amount: amount, currency: cur}) do
+          "\\"" <> cur <> " " <> to_string(amount) <> "\\""
+        end
+      end
+
   ## Examples
 
       iex> Typst.Code.encode(42)
