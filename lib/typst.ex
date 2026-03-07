@@ -87,15 +87,22 @@ defmodule Typst do
       end
 
   '''
-  defmacro sigil_TYPST(term, _modifiers) do
-    {literal, _meta} = extract_literal(term)
+  defmacro sigil_TYPST({:<<>>, meta, [expr]}, []) do
+    if not Macro.Env.has_var?(__CALLER__, {:assigns, nil}) do
+      raise "~TYPST requires a variable named \"assigns\" to exist and be set to a map"
+    end
 
-    EEx.compile_string(literal, engine: Typst.Engine)
+    options = [
+      engine: Typst.Engine,
+      file: __CALLER__.file,
+      line: __CALLER__.line + 1,
+      caller: __CALLER__,
+      indentation: meta[:indentation] || 0,
+      source: expr
+    ]
+
+    EEx.compile_string(expr, options)
   end
-
-  defp extract_literal({:<<>>, _meta, [literal]}) when is_binary(literal), do: {literal, []}
-  defp extract_literal({:<<>>, _meta, _parts} = term), do: {term, []}
-  defp extract_literal(term), do: {term, []}
 
   @type formattable :: {atom, any}
 

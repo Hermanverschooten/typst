@@ -47,24 +47,40 @@ defmodule Typst.Format.Table do
 
   defimpl String.Chars do
     def to_string(%Typst.Format.Table{} = table) do
-      params =
-        [
-          if_set(table.columns, "columns: #{table.columns}"),
-          if_set(table.rows, "rows: #{table.rows}"),
-          if_set(table.gutter, "gutter: #{table.gutter}"),
-          if_set(table.column_gutter, "column-gutter: #{table.column_gutter}"),
-          if_set(table.row_gutter, "row-gutter: #{table.row_gutter}"),
-          if_set(table.fill, "fill: #{table.fill}"),
-          if_set(table.align, "align: #{table.align}"),
-          if_set(table.stroke, "stroke: #{table.stroke}"),
-          if_set(table.inset, "inset: #{table.inset}")
-        ]
-        |> Enum.reject(fn item -> item == [] end)
-        |> Enum.intersperse(", ")
+      Typst.Markup.encode(table)
+    end
+  end
+
+  defimpl Typst.Markup do
+    @option_fields [
+      columns: "columns",
+      rows: "rows",
+      gutter: "gutter",
+      row_gutter: "row-gutter",
+      column_gutter: "column-gutter",
+      fill: "fill",
+      align: "align",
+      stroke: "stroke",
+      inset: "inset"
+    ]
+
+    def encode(%Typst.Format.Table{} = table) do
+      kv =
+        for {field, name} <- @option_fields,
+            value = Map.get(table, field),
+            value != nil do
+          "#{name}: #{value}"
+        end
+        |> Enum.join(", ")
+        |> then(fn
+          "" -> ""
+          str -> str <> ", "
+        end)
 
       [
         "#table(",
-        join_parts([params, Typst.Format.recurse(table.content)]),
+        kv,
+        Typst.Format.recurse(table.content),
         ")"
       ]
       |> IO.iodata_to_binary()
