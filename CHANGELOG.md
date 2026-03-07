@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.0] - 2026-03-07
+
+### Added
+- `render_to_svg/3` and `render_to_svg!/3` for SVG output, one per page
+- `Typst.Format.escape/1` for escaping special Typst markup characters in user-provided text
+- Documentation with examples for `Typst.Format` public functions
+- Improved README with feature overview, usage examples, and options
+
+### Removed (Breaking)
+- `Typst.Format.table_content/1` — use `%Typst.Format.Table{}` instead
+
+### Fixed
+- Cell typespec missing `:inset` field
+- Header and Footer using inconsistent separator pattern
+
 ## [v0.2.7] - 2026-03-07
 
 - Cache the Typst standard library, HTTP agent and cache directory as global statics to further reduce memory usage and improve performance across repeated renders.
@@ -76,7 +91,8 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.2.7...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.3.0...HEAD
+[v0.3.0]: https://github.com/Hermanverschooten/typst/compare/v0.2.7...v0.3.0
 [v0.2.7]: https://github.com/Hermanverschooten/typst/compare/v0.2.6...v0.2.7
 [v0.2.6]: https://github.com/Hermanverschooten/typst/compare/v0.2.5...v0.2.6
 [v0.2.5]: https://github.com/Hermanverschooten/typst/compare/v0.2.4...v0.2.5
