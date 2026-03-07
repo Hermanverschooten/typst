@@ -93,6 +93,16 @@ defmodule Typst.EngineTest do
       assert result == "ok"
     end
 
+    test "raises on missing assign" do
+      assert_raise ArgumentError, ~r/assign @font not available in template/, fn ->
+        EEx.eval_string(
+          "<%= @font %>",
+          [assigns: %{name: "World"}],
+          engine: Engine
+        )
+      end
+    end
+
     test "mixed markers" do
       template = "#text(font: <%= @font %>)[<%| @name %>]"
 

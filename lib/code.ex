@@ -15,7 +15,8 @@ defprotocol Typst.Code do
   | Atom | `:center` | `center` |
   | Boolean | `true` / `false` | `true` / `false` |
   | Nil | `nil` | `none` |
-  | String | `"hello"` | `"hello"` (with `\\`, `"`, `\\n`, `\\t`, `\\r` escaped) |
+  | Printable string | `"hello"` | `"hello"` (with `\\`, `"`, `\\n`, `\\t`, `\\r` escaped) |
+  | Non-printable binary | `<<0, 1, 2>>` | `bytes(0, 1, 2)` |
   | List | `[1, 2, 3]` | `(1, 2, 3)` |
   | Keyword | `[a: 1, b: 2]` | `(a: 1, b: 2)` |
   | Map | `%{a: 1}` | `(a: 1)` |
@@ -25,7 +26,7 @@ defprotocol Typst.Code do
   | Time | `~T[13:45:00]` | `datetime(hour: 13, minute: 45, second: 0)` |
   | NaiveDateTime | `~N[2024-01-15 13:45:00]` | `datetime(year: 2024, month: 1, ...)` |
   | DateTime | same as NaiveDateTime | |
-  | Regex | `~r/foo/` | `regex("foo")` |
+  | Regex | `~r/foo/` | `` regex(`foo`.text) `` |
   | Decimal | `Decimal.new("1.5")` | `decimal("1.5")` (requires `:decimal` dependency) |
 
   ## Custom implementations
@@ -79,6 +80,14 @@ end
 
 defimpl Typst.Code, for: BitString do
   def encode(value) when is_binary(value) do
+    if String.printable?(value) do
+      encode_printable(value)
+    else
+      encode_bytes(value)
+    end
+  end
+
+  defp encode_printable(value) do
     escaped =
       value
       |> String.replace("\\", "\\\\")
@@ -89,38 +98,42 @@ defimpl Typst.Code, for: BitString do
 
     "\"#{escaped}\""
   end
+
+  defp encode_bytes(bytes) do
+    inner =
+      bytes
+      |> :binary.bin_to_list()
+      |> Enum.join(", ")
+
+    "bytes(#{inner})"
+  end
 end
 
 defimpl Typst.Code, for: List do
-  def encode([{key, _} | _] = value) when is_atom(key) do
-    inner =
-      value
-      |> Enum.map(fn {k, v} -> "#{k}: #{Typst.Code.encode(v)}" end)
-      |> Enum.join(", ")
-
-    "(#{inner})"
-  end
-
-  def encode(value) do
-    inner =
-      value
-      |> Enum.map(&Typst.Code.encode/1)
-      |> Enum.join(", ")
-
-    "(#{inner})"
+  def encode(list) do
+    if Keyword.keyword?(list) and list != [] do
+      "(#{Typst.Code.Map.encode_kv(list)})"
+    else
+      "(#{Enum.map_join(list, ", ", &Typst.Code.encode/1)})"
+    end
   end
 end
 
 defimpl Typst.Code, for: Map do
-  def encode(value) when map_size(value) == 0, do: "(:)"
+  def encode(map) when map_size(map) == 0, do: "(:)"
 
-  def encode(value) do
-    inner =
-      value
-      |> Enum.map(fn {k, v} -> "#{k}: #{Typst.Code.encode(v)}" end)
-      |> Enum.join(", ")
+  def encode(map) do
+    "(#{encode_kv(map)})"
+  end
 
-    "(#{inner})"
+  def encode_kv(enumerable) do
+    Enum.map_join(enumerable, ", ", fn
+      {k, v} when is_binary(k) ->
+        "#{k}: #{Typst.Code.encode(v)}"
+
+      {k, v} when is_atom(k) ->
+        "#{Atom.to_string(k)}: #{Typst.Code.encode(v)}"
+    end)
   end
 end
 
@@ -130,19 +143,31 @@ end
 
 defimpl Typst.Code, for: Date do
   def encode(value) do
-    "datetime(year: #{value.year}, month: #{value.month}, day: #{value.day})"
+    kv = Typst.Code.Map.encode_kv(year: value.year, month: value.month, day: value.day)
+    "datetime(#{kv})"
   end
 end
 
 defimpl Typst.Code, for: Time do
   def encode(value) do
-    "datetime(hour: #{value.hour}, minute: #{value.minute}, second: #{value.second})"
+    kv = Typst.Code.Map.encode_kv(hour: value.hour, minute: value.minute, second: value.second)
+    "datetime(#{kv})"
   end
 end
 
 defimpl Typst.Code, for: NaiveDateTime do
   def encode(value) do
-    "datetime(year: #{value.year}, month: #{value.month}, day: #{value.day}, hour: #{value.hour}, minute: #{value.minute}, second: #{value.second})"
+    kv =
+      Typst.Code.Map.encode_kv(
+        year: value.year,
+        month: value.month,
+        day: value.day,
+        hour: value.hour,
+        minute: value.minute,
+        second: value.second
+      )
+
+    "datetime(#{kv})"
   end
 end
 
@@ -153,13 +178,15 @@ defimpl Typst.Code, for: DateTime do
   (already adjusted to the timezone).
   """
   def encode(value) do
-    "datetime(year: #{value.year}, month: #{value.month}, day: #{value.day}, hour: #{value.hour}, minute: #{value.minute}, second: #{value.second})"
+    value
+    |> DateTime.to_naive()
+    |> Typst.Code.NaiveDateTime.encode()
   end
 end
 
 defimpl Typst.Code, for: Regex do
   def encode(value) do
-    "regex(\"#{Regex.source(value)}\")"
+    "regex(`#{Regex.source(value)}`.text)"
   end
 end
 
