@@ -61,6 +61,7 @@ defmodule Typst.MixProject do
     [
       {:rustler, ">= 0.0.0", optional: true},
       {:rustler_precompiled, "~> 0.8"},
+      {:decimal, "~> 2.0", optional: true},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false}
     ]
   end
@@ -94,6 +95,13 @@ defmodule Typst.MixProject do
       main: "readme",
       extras: ["README.md"],
       groups_for_modules: [
+        Encoding: [
+          Typst.Code,
+          Typst.Markup
+        ],
+        Engine: [
+          Typst.Engine
+        ],
         Table: [
           Typst.Format.Table,
           Typst.Format.Table.Cell,
