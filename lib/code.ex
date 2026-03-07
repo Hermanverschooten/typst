@@ -6,6 +6,28 @@ defprotocol Typst.Code do
   converting Elixir values into their Typst code representation
   (used in function arguments, parameters, etc.).
 
+  ## Encoding reference
+
+  | Type | Elixir | Typst |
+  |------|--------|-------|
+  | Integer | `42` | `42` |
+  | Float | `3.14` | `3.14` |
+  | Atom | `:center` | `center` |
+  | Boolean | `true` / `false` | `true` / `false` |
+  | Nil | `nil` | `none` |
+  | String | `"hello"` | `"hello"` (with `\\`, `"`, `\\n`, `\\t`, `\\r` escaped) |
+  | List | `[1, 2, 3]` | `(1, 2, 3)` |
+  | Keyword | `[a: 1, b: 2]` | `(a: 1, b: 2)` |
+  | Map | `%{a: 1}` | `(a: 1)` |
+  | Empty map | `%{}` | `(:)` |
+  | Label | `{:label, :intro}` | `<intro>` |
+  | Date | `~D[2024-01-15]` | `datetime(year: 2024, month: 1, day: 15)` |
+  | Time | `~T[13:45:00]` | `datetime(hour: 13, minute: 45, second: 0)` |
+  | NaiveDateTime | `~N[2024-01-15 13:45:00]` | `datetime(year: 2024, month: 1, ...)` |
+  | DateTime | same as NaiveDateTime | |
+  | Regex | `~r/foo/` | `regex("foo")` |
+  | Decimal | `Decimal.new("1.5")` | `decimal("1.5")` (requires `:decimal` dependency) |
+
   ## Examples
 
       iex> Typst.Code.encode(42)
