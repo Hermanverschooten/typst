@@ -71,6 +71,10 @@ defmodule Typst.CodeTest do
     test "escapes carriage return" do
       assert Code.encode("a\rb") == "\"a\\rb\""
     end
+
+    test "non-printable binary encodes as bytes" do
+      assert Code.encode(<<0, 1, 2, 3>>) == "bytes(0, 1, 2, 3)"
+    end
   end
 
   describe "lists" do
@@ -99,6 +103,11 @@ defmodule Typst.CodeTest do
     test "map with atom keys" do
       result = Code.encode(%{a: 1})
       assert result == "(a: 1)"
+    end
+
+    test "map with string keys" do
+      result = Code.encode(%{"name" => "Alice"})
+      assert result == "(name: \"Alice\")"
     end
   end
 
@@ -138,11 +147,11 @@ defmodule Typst.CodeTest do
 
   describe "regex" do
     test "simple regex" do
-      assert Code.encode(~r/foo/) == "regex(\"foo\")"
+      assert Code.encode(~r/foo/) == "regex(`foo`.text)"
     end
 
     test "regex with special chars" do
-      assert Code.encode(~r/\d+/) == "regex(\"\\d+\")"
+      assert Code.encode(~r/\d+/) == "regex(`\\d+`.text)"
     end
   end
 
