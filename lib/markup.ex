@@ -9,6 +9,13 @@ defprotocol Typst.Markup do
   value that implements `String.Chars` (including `Typst.Format.Table` structs)
   works automatically.
 
+  > #### No escaping {: .warning}
+  >
+  > Strings are inserted as-is without escaping Typst markup characters.
+  > If you are inserting user-provided text, use `Typst.Format.escape/1`
+  > to prevent special characters (`*`, `#`, `@`, etc.) from being
+  > interpreted as Typst syntax.
+
   ## Encoding reference
 
   | Type | Behavior |
