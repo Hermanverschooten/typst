@@ -360,6 +360,45 @@ fn compile_png<'a>(
     Ok(pngs?)
 }
 
+#[rustler::nif(schedule = "DirtyCpu")]
+fn compile_svg<'a>(
+    env: Env<'a>,
+    markup: String,
+    root_dir: String,
+    extra_fonts: Vec<String>,
+    assets: Vec<(String, Binary<'a>)>,
+    cache_fonts: bool,
+) -> Result<Vec<Binary<'a>>, String> {
+    let world = TypstNifWorld::new(root_dir, markup, extra_fonts, cache_fonts);
+
+    for (vpath, bin) in assets {
+        world
+            .insert_virtual_file(vpath, bin.as_slice().to_vec())
+            .map_err(|e| format!("{:#?}", e))?;
+    }
+
+    let document: PagedDocument = typst::compile(&world)
+        .output
+        .map_err(|e| collect_typst_errors(e, world.source))?;
+
+    comemo::evict(30);
+
+    let svgs: Vec<Binary> = document
+        .pages
+        .iter()
+        .map(|page| {
+            let svg_string = typst_svg::svg(page);
+            let svg_bytes = svg_string.as_bytes();
+
+            let mut binary = NewBinary::new(env, svg_bytes.len());
+            binary.copy_from_slice(svg_bytes);
+            binary.into()
+        })
+        .collect();
+
+    Ok(svgs)
+}
+
 fn collect_typst_errors(errors: EcoVec<SourceDiagnostic>, source: Source) -> String {
     let mut error_messages = Vec::new();
 

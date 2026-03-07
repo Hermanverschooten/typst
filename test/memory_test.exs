@@ -81,4 +81,15 @@ defmodule Typst.MemoryTest do
 
     assert growth < 50, "Memory grew by #{growth} MB over 1000 iterations"
   end
+
+  @tag :memory
+  @tag timeout: :infinity
+  test "SVG render with cached fonts does not leak memory" do
+    {_samples, growth} =
+      run_iterations(1000, fn ->
+        Typst.render_to_svg!("= Hello World\nThis is a test.", [], cache_fonts: true)
+      end)
+
+    assert growth < 50, "Memory grew by #{growth} MB over 1000 iterations"
+  end
 end
