@@ -309,7 +309,7 @@ fn compile_pdf<'a>(
         .output
         .map_err(|e| collect_typst_errors(e, world.source))?;
 
-    comemo::evict(30);
+    comemo::evict(0);
 
     let pdf_bytes =
         typst_pdf::pdf(&document, &PdfOptions::default()).map_err(|e| format!("{:#?}", e))?;
@@ -342,7 +342,7 @@ fn compile_png<'a>(
         .output
         .map_err(|e| collect_typst_errors(e, world.source))?;
 
-    comemo::evict(30);
+    comemo::evict(0);
 
     let pngs: Result<Vec<Binary>, String> = document
         .pages
@@ -381,7 +381,7 @@ fn compile_svg<'a>(
         .output
         .map_err(|e| collect_typst_errors(e, world.source))?;
 
-    comemo::evict(30);
+    comemo::evict(0);
 
     let svgs: Vec<Binary> = document
         .pages
