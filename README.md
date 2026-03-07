@@ -80,6 +80,41 @@ logo = File.read!("logo.svg")
 )
 ```
 
+### Typst-aware engine and `~TYPST` sigil
+
+The standard EEx `<%= %>` tags convert values with `to_string/1`, which doesn't understand Typst syntax. The `Typst.Engine` provides automatic encoding through two protocols:
+
+- `<%= expr %>` — encodes via `Typst.Code` (for function arguments: atoms become bare words, strings get quoted, lists become arrays, etc.)
+- `<%| expr %>` — encodes via `Typst.Markup` (for content text: strings pass through, other types use `to_string/1`)
+
+Both markers support `@variable` assigns syntax.
+
+```elixir
+EEx.eval_string(
+  "#text(font: <%= @font %>)[<%| @name %>]",
+  [assigns: %{font: "Roboto", name: "World"}],
+  engine: Typst.Engine
+)
+# => ~S|#text(font: "Roboto")[World]|
+```
+
+For compile-time templates, use the `~TYPST` sigil which requires an `assigns` variable in scope:
+
+```elixir
+import Typst, only: :sigils
+
+assigns = %{title: "Report", align: :center, items: [1, 2, 3]}
+
+~TYPST"""
+#set align(<%= @align %>)
+= <%| @title %>
+#list(<%= @items %>)
+"""
+# => "#set align(center)\n= Report\n#list((1, 2, 3))\n"
+```
+
+See `Typst.Code` for the full encoding reference table.
+
 ### Options
 
 All render functions accept these options:
