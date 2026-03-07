@@ -16,6 +16,14 @@ defprotocol Typst.Markup do
   > to prevent special characters (`*`, `#`, `@`, etc.) from being
   > interpreted as Typst syntax.
 
+  ## Custom implementations
+
+  Both `Typst.Markup` and `Typst.Code` are protocols, so you can implement
+  them for your own types or format values before passing them in. For example,
+  for locale-aware number formatting:
+
+      <%| MyApp.Cldr.Number.to_string!(@price) %>
+
   ## Encoding reference
 
   | Type | Behavior |
