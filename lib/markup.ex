@@ -5,6 +5,18 @@ defprotocol Typst.Markup do
   This protocol is used by `Typst.Engine` for `<%| %>` expressions,
   converting Elixir values into content text suitable for Typst markup mode.
 
+  Unlike `Typst.Code`, this protocol uses `@fallback_to_any true`, so any
+  value that implements `String.Chars` (including `Typst.Format.Table` structs)
+  works automatically.
+
+  ## Encoding reference
+
+  | Type | Behavior |
+  |------|----------|
+  | Printable binary | returned as-is |
+  | Non-printable binary | raises `Protocol.UndefinedError` |
+  | Any other type | delegates to `String.Chars.to_string/1` |
+
   ## Examples
 
       iex> Typst.Markup.encode("Hello")

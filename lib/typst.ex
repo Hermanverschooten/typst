@@ -6,6 +6,17 @@ defmodule Typst do
   Note that when using the formatting directives, they are exactly the same as
   `EEx`, so all of its constructs are supported.
 
+  ## Typst-aware engine
+
+  For automatic encoding of Elixir values into Typst syntax, use `Typst.Engine`
+  or the `~TYPST` sigil. The engine provides two markers:
+
+    * `<%= expr %>` — encodes via `Typst.Code` (code context: atoms, strings, lists, dates, etc.)
+    * `<%| expr %>` — encodes via `Typst.Markup` (markup context: content text)
+
+  Both support `@variable` assigns syntax. See `Typst.Engine`, `Typst.Code`,
+  and `Typst.Markup` for details.
+
   See [Typst's documentation](https://typst.app/docs) for a quickstart.
   """
 
