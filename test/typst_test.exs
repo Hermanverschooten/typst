@@ -45,7 +45,6 @@ defmodule TypstTest do
       {uncached_us, {:ok, _}} =
         :timer.tc(fn -> Typst.render_to_pdf(markup, [], cache_fonts: false) end)
 
-      IO.puts("\n  Font caching: cached=#{cached_us}µs uncached=#{uncached_us}µs")
       assert cached_us < uncached_us
     end
   end
