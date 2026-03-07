@@ -22,23 +22,71 @@ defmodule Typst do
 
   @embedded_fonts [Path.join(:code.priv_dir(:typst), "fonts")]
 
-  @doc ~S"""
+  @doc ~S'''
   Sigil for compile-time Typst templates using `Typst.Engine`.
 
   Uses `<%= %>` for code context (`Typst.Code`) and `<%| %>` for
   markup context (`Typst.Markup`). Supports `@variable` assigns syntax.
 
-  Requires an `assigns` variable to be in scope.
+  The template is compiled at compile-time, so it must be a string literal.
+  An `assigns` variable (map or keyword list) must be in scope.
 
-  ## Examples
+  ## Inline usage
 
       import Typst, only: :sigils
 
       assigns = %{name: "World", font: "Roboto"}
       result = ~TYPST|#text(font: <%= @font %>)[<%| @name %>]|
-      assert result == ~S|#text(font: "Roboto")[World]|
 
-  """
+  ## Using in a module
+
+  Import the sigil and build a function that takes assigns:
+
+      defmodule MyApp.Invoice do
+        import Typst, only: :sigils
+
+        def render(assigns) do
+          ~TYPST"""
+          #set text(font: <%= @font %>)
+
+          = <%| @title %>
+
+          #table(
+            columns: <%= @columns %>,
+            <%= for item <- @items do %>
+              [<%| item.name %>], [<%| item.quantity %>],
+            <% end %>
+          )
+          """
+        end
+      end
+
+      MyApp.Invoice.render(%{
+        font: "Roboto",
+        title: "Invoice #123",
+        columns: 2,
+        items: [%{name: "Widget", quantity: "10"}]
+      })
+
+  ## Passing to render functions
+
+  The sigil produces a string, which can be passed directly to
+  `render_to_pdf/3` and friends:
+
+      defmodule MyApp.Report do
+        import Typst, only: :sigils
+
+        def to_pdf(assigns) do
+          markup = ~TYPST"""
+          #set align(<%= @align %>)
+          = <%| @title %>
+          """
+
+          Typst.render_to_pdf(markup)
+        end
+      end
+
+  '''
   defmacro sigil_TYPST(term, _modifiers) do
     {literal, _meta} = extract_literal(term)
 
