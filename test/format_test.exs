@@ -2,7 +2,7 @@ defmodule Typst.FormatTest do
   use ExUnit.Case, async: true
 
   import Typst.Format
-  doctest Typst.Format, except: [format_column_element: 1]
+  doctest Typst.Format
 
   test "bold" do
     assert "*hello*" == Typst.render_to_string("<%= hello %>", hello: bold("hello"))

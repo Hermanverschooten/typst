@@ -1,41 +1,91 @@
 defmodule Typst.Format do
   @moduledoc """
-  Contains helper functions for converting elixir datatypes into 
-  the format that Typst expects
-  """
+  Contains helper functions for converting Elixir datatypes into
+  the format that Typst expects.
 
-  @type column_data :: String.t() | integer
-
-  @spec table_content(list(list(column_data))) :: String.t()
-  @doc """
-  Converts a series of columns mapped as a nested list to a format that can be 
-  plugged in an existing table.
+  These functions are useful when building Typst markup with EEx templates.
 
   ## Examples
 
-      iex> columns = [["John", 10, 20], ["Alice", 20, 30]]
-      iex> Typst.Format.table_content(columns)
-      ~s/"John", "10", "20",\\n  "Alice", "20", "30"/
+      iex> Typst.render_to_string("Name: <%= name %>", name: Typst.Format.bold("Alice"))
+      "Name: *Alice*"
+
+      iex> Typst.render_to_string("columns: <%= cols %>", cols: Typst.Format.array(["1fr", "2fr"]))
+      "columns: (1fr, 2fr)"
   """
-  @deprecated "use %Typst.Format.Table{}"
-  def table_content(columns) when is_list(columns) do
-    Enum.map_join(columns, ",\n  ", fn row ->
-      Enum.map_join(row, ", ", &format_column_element/1)
-    end)
+
+  @doc """
+  Escapes special Typst markup characters in the given string by prefixing them with a backslash.
+
+  This is useful when inserting user-provided text that should be rendered literally,
+  without triggering Typst's markup syntax.
+
+  The following characters are escaped: `\\`, `*`, `_`, `` ` ``, `$`, `#`, `@`, `<`, `>`, `~`, `=`, `-`, `+`, `/`, `[`, `]`
+
+  Note: the `\\\\` in the examples below is Elixir's string representation of a single backslash.
+
+  ## Examples
+
+      iex> Typst.Format.escape("hello *world*")
+      "hello \\\\*world\\\\*"
+
+      iex> Typst.Format.escape("email@example.com")
+      "email\\\\@example.com"
+
+      iex> Typst.Format.escape("price is $10")
+      "price is \\\\$10"
+
+  """
+  @spec escape(String.t()) :: String.t()
+  def escape(text) when is_binary(text) do
+    String.replace(text, ~w(\\ * _ ` $ # @ < > ~ = - + / [ ]), &"\\#{&1}")
   end
 
-  defp format_column_element(e) when is_integer(e) or is_binary(e), do: add_quotes(e)
-  defp format_column_element(unknown), do: unknown |> inspect() |> add_quotes()
+  @doc """
+  Wraps the given element in Typst bold markers (`*...*`).
 
-  defp add_quotes(s), do: "\"#{s}\""
+  ## Examples
 
+      iex> Typst.Format.bold("hello")
+      "*hello*"
+
+      iex> Typst.Format.bold(42)
+      "*42*"
+
+  """
   @spec bold(String.Chars.t()) :: String.t()
   def bold(el), do: ["*", to_string(el), "*"] |> IO.iodata_to_binary()
 
+  @doc """
+  Wraps the given element in Typst content brackets (`[...]`).
+
+  Returns `[]` for `nil` values.
+
+  ## Examples
+
+      iex> Typst.Format.content("hello")
+      "[hello]"
+
+      iex> Typst.Format.content(nil)
+      "[]"
+
+  """
   @spec content(String.Chars.t()) :: String.t()
   def content(nil), do: "[]"
   def content(el), do: ["[", to_string(el), "]"] |> IO.iodata_to_binary()
 
+  @doc """
+  Converts a list into a Typst array `(...)`.
+
+  ## Examples
+
+      iex> Typst.Format.array(["1fr", "2fr", "1fr"])
+      "(1fr, 2fr, 1fr)"
+
+      iex> Typst.Format.array(["red", "blue"])
+      "(red, blue)"
+
+  """
   @spec array(list()) :: String.t()
   def array(list) when is_list(list),
     do: (["("] ++ Enum.intersperse(list, ", ") ++ [")"]) |> IO.iodata_to_binary()
