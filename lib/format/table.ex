@@ -91,6 +91,7 @@ defmodule Typst.Format.Table do
             fill: String.t(),
             align: String.t(),
             stroke: String.t(),
+            inset: String.t(),
             breakable: boolean()
           }
 
