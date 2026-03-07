@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.1] - 2026-03-07
+
+### Fixed
+- Memory leak caused by comemo memoization cache retaining ~30 compilations worth of data. Since each NIF call creates a fresh World, the cache was never reused.
+
 ## [v0.3.0] - 2026-03-07
 
 ### Added
@@ -91,7 +96,8 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.3.1...HEAD
+[v0.3.1]: https://github.com/Hermanverschooten/typst/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/Hermanverschooten/typst/compare/v0.2.7...v0.3.0
 [v0.2.7]: https://github.com/Hermanverschooten/typst/compare/v0.2.6...v0.2.7
 [v0.2.6]: https://github.com/Hermanverschooten/typst/compare/v0.2.5...v0.2.6
