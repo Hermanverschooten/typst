@@ -11,6 +11,9 @@ defmodule TypstTest do
 
     {:ok, [png]} = Typst.render_to_png("= Hello <%= name %>", name: "world")
     assert <<137, 80, 78, 71, 13, 10, 26, 10, _rest::binary>> = png
+
+    {:ok, [svg]} = Typst.render_to_svg("= Hello <%= name %>", name: "world")
+    assert svg =~ "<svg"
   end
 
   describe "virtual files" do
@@ -33,6 +36,9 @@ defmodule TypstTest do
 
       {:ok, [png]} = Typst.render_to_png("= cached", [], cache_fonts: false)
       assert <<137, 80, 78, 71, 13, 10, 26, 10, _rest::binary>> = png
+
+      {:ok, [svg]} = Typst.render_to_svg("= cached", [], cache_fonts: false)
+      assert svg =~ "<svg"
     end
 
     test "cached calls are faster than uncached" do

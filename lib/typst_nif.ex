@@ -26,4 +26,7 @@ defmodule Typst.NIF do
 
   def compile_png(_content, _root_dir, _font_paths, _pixels_per_pt, _assets, _cache_fonts),
     do: :erlang.nif_error(:nif_not_loaded)
+
+  def compile_svg(_content, _root_dir, _font_paths, _assets, _cache_fonts),
+    do: :erlang.nif_error(:nif_not_loaded)
 end

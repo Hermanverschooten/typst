@@ -52,7 +52,7 @@ defmodule Typst do
 
   This function takes the following options:
 
-    * `:extra_fonts` - a list of directories to seatch for fonts
+    * `:extra_fonts` - a list of directories to search for fonts
 
     * `:root_dir` - the root directory for typst, where all filepaths are resolved from. defaults to the current directory
 
@@ -109,7 +109,7 @@ defmodule Typst do
 
   This function takes the following options:
 
-    * `:extra_fonts` - a list of directories to seatch for fonts
+    * `:extra_fonts` - a list of directories to search for fonts
 
     * `:root_dir` - the root directory for typst, where all filepaths are resolved from. defaults to the current directory
 
@@ -152,6 +152,58 @@ defmodule Typst do
     case render_to_png(typst_markup, bindings, opts) do
       {:ok, png} -> png
       {:error, reason} -> raise "could not build png: #{reason}"
+    end
+  end
+
+  @spec render_to_svg(String.t(), list(formattable()), list(typst_opt())) ::
+          {:ok, list(String.t())} | {:error, String.t()}
+  @doc """
+  Converts a given piece of typst markup to SVG strings, one per each page.
+
+  ## Options
+
+  This function takes the following options:
+
+    * `:extra_fonts` - a list of directories to search for fonts
+
+    * `:root_dir` - the root directory for typst, where all filepaths are resolved from. defaults to the current directory
+
+    * `:assets` - a list of `{"name", binary()}` or enumerable to store blobs in the typst virtual file system
+
+    * `:trim` - when `true`, trims blank lines left by EEx tags. Defaults to `false`.
+
+    * `:cache_fonts` - when `true`, caches scanned fonts across calls. Defaults to `true`.
+
+  ## Examples
+
+      iex> {:ok, svgs} = Typst.render_to_svg("= test\\n<%= name %>", name: "John")
+      iex> is_list(svgs)
+      true
+
+  """
+  def render_to_svg(typst_markup, bindings \\ [], opts \\ []) do
+    extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
+    root_dir = Keyword.get(opts, :root_dir, ".")
+    cache_fonts = Keyword.get(opts, :cache_fonts, true)
+
+    assets =
+      Keyword.get(opts, :assets, [])
+      |> Enum.map(fn {key, val} -> {to_string(key), val} end)
+
+    trim = Keyword.get(opts, :trim, false)
+    markup = render_to_string(typst_markup, bindings, trim: trim)
+
+    Typst.NIF.compile_svg(markup, root_dir, extra_fonts, assets, cache_fonts)
+  end
+
+  @spec render_to_svg!(String.t(), list(formattable()), list(typst_opt())) :: list(String.t())
+  @doc """
+  Same as `render_to_svg/3`, but raises if the rendering fails.
+  """
+  def render_to_svg!(typst_markup, bindings \\ [], opts \\ []) do
+    case render_to_svg(typst_markup, bindings, opts) do
+      {:ok, svgs} -> svgs
+      {:error, reason} -> raise "could not build svg: #{reason}"
     end
   end
 end
