@@ -25,6 +25,11 @@ struct CachedFonts {
 
 static FONT_CACHE: LazyLock<Mutex<Option<CachedFonts>>> = LazyLock::new(|| Mutex::new(None));
 
+static LIBRARY_CACHE: LazyLock<LazyHash<Library>> =
+    LazyLock::new(|| LazyHash::new(Library::default()));
+
+static HTTP_AGENT: LazyLock<ureq::Agent> = LazyLock::new(ureq::Agent::new);
+
 /// Main interface that determines the environment for Typst.
 pub struct TypstNifWorld {
     /// Root path to which files will be resolved.
@@ -32,9 +37,6 @@ pub struct TypstNifWorld {
 
     /// The content of a source.
     source: Source,
-
-    /// The standard library.
-    library: LazyHash<Library>,
 
     /// Metadata about all known fonts.
     book: Arc<LazyHash<FontBook>>,
@@ -47,9 +49,6 @@ pub struct TypstNifWorld {
 
     /// Cache directory (e.g. where packages are downloaded to).
     cache_directory: PathBuf,
-
-    /// http agent to download packages.
-    http: ureq::Agent,
 
     /// Datetime.
     time: time::OffsetDateTime,
@@ -94,7 +93,6 @@ impl TypstNifWorld {
         };
 
         Self {
-            library: LazyHash::new(Library::default()),
             book,
             root,
             fonts,
@@ -103,7 +101,6 @@ impl TypstNifWorld {
             cache_directory: std::env::var_os("CACHE_DIRECTORY")
                 .map(|os_path| os_path.into())
                 .unwrap_or(std::env::temp_dir()),
-            http: ureq::Agent::new(),
             files: Arc::new(Mutex::new(HashMap::new())),
         }
     }
@@ -179,8 +176,7 @@ impl TypstNifWorld {
         );
 
         let response = retry(|| {
-            let response = self
-                .http
+            let response = HTTP_AGENT
                 .get(&url)
                 .call()
                 .map_err(|error| eco_format!("{error}"))?;
@@ -232,7 +228,7 @@ impl TypstNifWorld {
 impl typst::World for TypstNifWorld {
     /// Standard library.
     fn library(&self) -> &LazyHash<Library> {
-        &self.library
+        &LIBRARY_CACHE
     }
 
     /// Metadata about all known Books.
