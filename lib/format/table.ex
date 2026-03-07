@@ -243,7 +243,12 @@ defmodule Typst.Format.Table do
       def to_string(%Typst.Format.Table.Header{} = header) do
         [
           "table.header(",
-          if_set(header.repeat, fn -> "repeat: #{header.repeat}, " end),
+          [
+            if_set(header.repeat, "repeat: #{header.repeat}")
+          ]
+          |> Enum.reject(fn item -> item == [] end)
+          |> Enum.intersperse(", ")
+          |> maybe_append_separator(),
           Typst.Format.recurse(header.content),
           ")"
         ]
@@ -276,7 +281,12 @@ defmodule Typst.Format.Table do
       def to_string(%Typst.Format.Table.Footer{} = footer) do
         [
           "table.footer(",
-          if_set(footer.repeat, fn -> "repeat: #{footer.repeat}, " end),
+          [
+            if_set(footer.repeat, "repeat: #{footer.repeat}")
+          ]
+          |> Enum.reject(fn item -> item == [] end)
+          |> Enum.intersperse(", ")
+          |> maybe_append_separator(),
           Typst.Format.recurse(footer.content),
           ")"
         ]
