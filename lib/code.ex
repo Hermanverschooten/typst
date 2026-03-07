@@ -131,6 +131,11 @@ defimpl Typst.Code, for: NaiveDateTime do
 end
 
 defimpl Typst.Code, for: DateTime do
+  @doc """
+  Encodes a `DateTime` as a Typst `datetime`. Timezone information is dropped
+  since Typst does not support timezones — the time values are used as-is
+  (already adjusted to the timezone).
+  """
   def encode(value) do
     "datetime(year: #{value.year}, month: #{value.month}, day: #{value.day}, hour: #{value.hour}, minute: #{value.minute}, second: #{value.second})"
   end
