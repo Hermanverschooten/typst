@@ -16,6 +16,53 @@ defmodule TypstTest do
     assert svg =~ "<svg"
   end
 
+  describe "to_* functions (no EEx processing)" do
+    test "to_pdf compiles plain string" do
+      {:ok, pdf} = Typst.to_pdf("= Hello World")
+      assert <<37, 80, 68, 70, 45, _rest::binary>> = pdf
+    end
+
+    test "to_png compiles plain string" do
+      {:ok, [png]} = Typst.to_png("= Hello World")
+      assert <<137, 80, 78, 71, 13, 10, 26, 10, _rest::binary>> = png
+    end
+
+    test "to_svg compiles plain string" do
+      {:ok, [svg]} = Typst.to_svg("= Hello World")
+      assert svg =~ "<svg"
+    end
+
+    test "to_pdf! raises on invalid markup" do
+      assert_raise RuntimeError, ~r/could not build pdf/, fn ->
+        Typst.to_pdf!(~S|#image(|)
+      end
+    end
+
+    test "to_png! raises on invalid markup" do
+      assert_raise RuntimeError, ~r/could not build png/, fn ->
+        Typst.to_png!(~S|#image(|)
+      end
+    end
+
+    test "to_svg! raises on invalid markup" do
+      assert_raise RuntimeError, ~r/could not build svg/, fn ->
+        Typst.to_svg!(~S|#image(|)
+      end
+    end
+
+    test "does not process EEx directives" do
+      {:ok, pdf} = Typst.to_pdf("= Hello <%= name %>")
+      assert <<37, 80, 68, 70, 45, _rest::binary>> = pdf
+    end
+
+    test "supports assets option" do
+      file = Path.join(["test", "assets", "image.jpg"]) |> File.read!()
+
+      assert {:ok, _pdf} =
+               Typst.to_pdf(~S|#image(read("image", encoding: none))|, assets: [image: file])
+    end
+  end
+
   describe "virtual files" do
     for image <- ["image.jpg", "image.png", "logo.svg"] do
       test "#{image}" do
