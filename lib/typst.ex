@@ -195,12 +195,8 @@ defmodule Typst do
   Same as `to_pdf/2`, but raises if the compilation fails.
   """
   @spec to_pdf!(String.t(), list(compile_opt())) :: binary()
-  def to_pdf!(typst_markup, opts \\ []) do
-    case to_pdf(typst_markup, opts) do
-      {:ok, pdf} -> pdf
-      {:error, reason} -> raise "could not build pdf: #{reason}"
-    end
-  end
+  def to_pdf!(typst_markup, opts \\ []),
+    do: ok_or_raise!(to_pdf(typst_markup, opts), "pdf")
 
   @doc """
   Compiles a Typst markup string directly to a list of PNG binaries, one per page.
@@ -242,12 +238,8 @@ defmodule Typst do
   Same as `to_png/2`, but raises if the compilation fails.
   """
   @spec to_png!(String.t(), list(compile_opt())) :: list(binary())
-  def to_png!(typst_markup, opts \\ []) do
-    case to_png(typst_markup, opts) do
-      {:ok, pngs} -> pngs
-      {:error, reason} -> raise "could not build png: #{reason}"
-    end
-  end
+  def to_png!(typst_markup, opts \\ []),
+    do: ok_or_raise!(to_png(typst_markup, opts), "png")
 
   @doc """
   Compiles a Typst markup string directly to a list of SVG strings, one per page.
@@ -286,12 +278,8 @@ defmodule Typst do
   Same as `to_svg/2`, but raises if the compilation fails.
   """
   @spec to_svg!(String.t(), list(compile_opt())) :: list(String.t())
-  def to_svg!(typst_markup, opts \\ []) do
-    case to_svg(typst_markup, opts) do
-      {:ok, svgs} -> svgs
-      {:error, reason} -> raise "could not build svg: #{reason}"
-    end
-  end
+  def to_svg!(typst_markup, opts \\ []),
+    do: ok_or_raise!(to_svg(typst_markup, opts), "svg")
 
   @type formattable :: {atom, any}
 
@@ -367,12 +355,8 @@ defmodule Typst do
   @doc """
   Same as `render_to_pdf/3`, but raises if the rendering fails.
   """
-  def render_to_pdf!(typst_markup, bindings \\ [], opts \\ []) do
-    case render_to_pdf(typst_markup, bindings, opts) do
-      {:ok, pdf} -> pdf
-      {:error, reason} -> raise "could not build pdf: #{reason}"
-    end
-  end
+  def render_to_pdf!(typst_markup, bindings \\ [], opts \\ []),
+    do: ok_or_raise!(render_to_pdf(typst_markup, bindings, opts), "pdf")
 
   @spec render_to_png(String.t(), list(formattable()), list(typst_opt())) ::
           {:ok, list(binary())} | {:error, String.t()}
@@ -413,12 +397,8 @@ defmodule Typst do
   @doc """
   Same as `render_to_png/3`, but raises if the rendering fails.
   """
-  def render_to_png!(typst_markup, bindings \\ [], opts \\ []) do
-    case render_to_png(typst_markup, bindings, opts) do
-      {:ok, png} -> png
-      {:error, reason} -> raise "could not build png: #{reason}"
-    end
-  end
+  def render_to_png!(typst_markup, bindings \\ [], opts \\ []),
+    do: ok_or_raise!(render_to_png(typst_markup, bindings, opts), "png")
 
   @spec render_to_svg(String.t(), list(formattable()), list(typst_opt())) ::
           {:ok, list(String.t())} | {:error, String.t()}
@@ -457,12 +437,11 @@ defmodule Typst do
   @doc """
   Same as `render_to_svg/3`, but raises if the rendering fails.
   """
-  def render_to_svg!(typst_markup, bindings \\ [], opts \\ []) do
-    case render_to_svg(typst_markup, bindings, opts) do
-      {:ok, svgs} -> svgs
-      {:error, reason} -> raise "could not build svg: #{reason}"
-    end
-  end
+  def render_to_svg!(typst_markup, bindings \\ [], opts \\ []),
+    do: ok_or_raise!(render_to_svg(typst_markup, bindings, opts), "svg")
+
+  defp ok_or_raise!({:ok, result}, _format), do: result
+  defp ok_or_raise!({:error, reason}, format), do: raise("could not build #{format}: #{reason}")
 
   defp extract_compile_opts(opts) do
     extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
