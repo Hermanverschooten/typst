@@ -87,15 +87,10 @@ defimpl Typst.Code, for: BitString do
     end
   end
 
-  defp encode_printable(value) do
-    escaped =
-      value
-      |> String.replace("\\", "\\\\")
-      |> String.replace("\"", "\\\"")
-      |> String.replace("\n", "\\n")
-      |> String.replace("\t", "\\t")
-      |> String.replace("\r", "\\r")
+  @escape_map %{"\\" => "\\\\", "\"" => "\\\"", "\n" => "\\n", "\t" => "\\t", "\r" => "\\r"}
 
+  defp encode_printable(value) do
+    escaped = String.replace(value, Map.keys(@escape_map), &@escape_map[&1])
     "\"#{escaped}\""
   end
 

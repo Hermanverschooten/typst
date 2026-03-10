@@ -42,45 +42,30 @@ defmodule Typst.Engine do
   defdelegate handle_text(state, meta, text), to: EEx.Engine
 
   @impl true
-  def handle_expr(state, "=", expr) do
-    expr = traverse(expr)
-    %{binary: binary, dynamic: dynamic, vars_count: vars_count} = state
-    var = Macro.var(:"arg#{vars_count}", __MODULE__)
-
-    ast =
-      quote do
-        unquote(var) = Typst.Code.encode(unquote(expr))
-      end
-
-    segment =
-      quote do
-        unquote(var) :: binary
-      end
-
-    %{state | dynamic: [ast | dynamic], binary: [segment | binary], vars_count: vars_count + 1}
-  end
-
-  def handle_expr(state, "|", expr) do
-    expr = traverse(expr)
-    %{binary: binary, dynamic: dynamic, vars_count: vars_count} = state
-    var = Macro.var(:"arg#{vars_count}", __MODULE__)
-
-    ast =
-      quote do
-        unquote(var) = Typst.Markup.encode(unquote(expr))
-      end
-
-    segment =
-      quote do
-        unquote(var) :: binary
-      end
-
-    %{state | dynamic: [ast | dynamic], binary: [segment | binary], vars_count: vars_count + 1}
-  end
+  def handle_expr(state, "=", expr), do: handle_encode_expr(state, Typst.Code, expr)
+  def handle_expr(state, "|", expr), do: handle_encode_expr(state, Typst.Markup, expr)
 
   def handle_expr(state, marker, expr) do
     expr = traverse(expr)
     EEx.Engine.handle_expr(state, marker, expr)
+  end
+
+  defp handle_encode_expr(state, encoder, expr) do
+    expr = traverse(expr)
+    %{binary: binary, dynamic: dynamic, vars_count: vars_count} = state
+    var = Macro.var(:"arg#{vars_count}", __MODULE__)
+
+    ast =
+      quote do
+        unquote(var) = unquote(encoder).encode(unquote(expr))
+      end
+
+    segment =
+      quote do
+        unquote(var) :: binary
+      end
+
+    %{state | dynamic: [ast | dynamic], binary: [segment | binary], vars_count: vars_count + 1}
   end
 
   defp traverse(expr) do
