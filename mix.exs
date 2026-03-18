@@ -2,7 +2,7 @@ defmodule Typst.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/Hermanverschooten/typst"
-  @version "0.3.1"
+  @version "0.3.2"
 
   @nerves_rust_target_triple_mapping %{
     "armv6-nerves-linux-gnueabihf": "arm-unknown-linux-gnueabihf",
@@ -37,6 +37,7 @@ defmodule Typst.MixProject do
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: [compile: ["compile", &copy_assets/1]],
 
       # Hex
       description: "Elixir bindings for typst",
@@ -80,13 +81,21 @@ defmodule Typst.MixProject do
         "lib",
         "native",
         "checksum-*.exs",
-        "priv/fonts",
+        "assets",
         ".formatter.exs",
         "README.md",
         "LICENSE",
         "mix.exs"
       ]
     ]
+  end
+
+  defp copy_assets(_) do
+    source = Path.join(__DIR__, "assets")
+    target = Path.join(Mix.Project.app_path(), "priv")
+
+    File.mkdir_p!(target)
+    File.cp_r!(source, target)
   end
 
   defp docs do
