@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.3] - 2026-03-28
+
+### Fixed
+- Trailing comma in table output when content is empty (e.g. `#table(columns: 2, )` → `#table(columns: 2)`)
+- NIF panic when font cache mutex is poisoned by a prior thread panic
+- NIF panic on out-of-bounds font index access
+- HTTP package downloads could hang indefinitely — added 30-second timeout
+
+### Changed
+- Updated `rustler_precompiled` 0.8.4 → 0.9.0
+- Updated `comemo` 0.4 → 0.5 (eliminates duplicate dependency with typst internals)
+- Updated Rust NIF `rustler` crate 0.36 → 0.37
+
 ## [v0.3.2] - 2026-03-18
 
 ### Changed
@@ -101,7 +114,8 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.3.3...HEAD
+[v0.3.3]: https://github.com/Hermanverschooten/typst/compare/v0.3.2...v0.3.3
 [v0.3.2]: https://github.com/Hermanverschooten/typst/compare/v0.3.1...v0.3.2
 [v0.3.1]: https://github.com/Hermanverschooten/typst/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/Hermanverschooten/typst/compare/v0.2.7...v0.3.0

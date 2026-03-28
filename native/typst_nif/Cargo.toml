@@ -1,6 +1,6 @@
 [package]
 name = "typst_nif"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Herman verschooten"]
 edition = "2021"
 
@@ -10,8 +10,8 @@ path = "src/lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-comemo = "0.4"
-rustler = { version = "0.36", default-features = false, features = ["derive"] }
+comemo = "0.5"
+rustler = { version = "0.37", default-features = false, features = ["derive"] }
 tar = "0.4.43"
 time = "0.3.36"
 ttf-parser = "0.25.0"
