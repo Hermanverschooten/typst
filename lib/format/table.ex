@@ -72,15 +72,19 @@ defmodule Typst.Format.Table do
           "#{name}: #{value}"
         end
         |> Enum.join(", ")
-        |> then(fn
-          "" -> ""
-          str -> str <> ", "
-        end)
+
+      content = Typst.Format.recurse(table.content)
+
+      inner =
+        case {kv, content} do
+          {"", c} -> c
+          {k, []} -> k
+          {k, c} -> [k, ", ", c]
+        end
 
       [
         "#table(",
-        kv,
-        Typst.Format.recurse(table.content),
+        inner,
         ")"
       ]
       |> IO.iodata_to_binary()
