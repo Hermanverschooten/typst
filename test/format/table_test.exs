@@ -116,4 +116,32 @@ defmodule Typst.Format.TableTest do
     assert expected == Typst.render_to_string("<%= footer %>", footer: footer)
     {:ok, _pdf} = Typst.render_to_pdf("<%= footer %>", footer: footer)
   end
+
+  test "table with params but empty content" do
+    alias Typst.Format.Table
+
+    table = %Table{columns: 2, content: []}
+    assert "#table(columns: 2)" == to_string(table)
+  end
+
+  test "table with content but no params" do
+    alias Typst.Format.Table
+
+    table = %Table{content: ["hello", "world"]}
+    assert "#table([hello], [world])" == to_string(table)
+  end
+
+  test "cell with content only" do
+    alias Typst.Format.Table.Cell
+
+    cell = %Cell{content: "foo"}
+    assert "table.cell([foo])" == to_string(cell)
+  end
+
+  test "header with content only renders without trailing comma" do
+    alias Typst.Format.Table.Header
+
+    header = %Header{content: ["foo"]}
+    assert "table.header([foo])" == to_string(header)
+  end
 end

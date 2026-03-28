@@ -47,8 +47,7 @@ defmodule Typst.Format.Table do
 
   defimpl String.Chars do
     def to_string(%Typst.Format.Table{} = table) do
-      [
-        "#table(",
+      params =
         [
           if_set(table.columns, "columns: #{table.columns}"),
           if_set(table.rows, "rows: #{table.rows}"),
@@ -62,8 +61,10 @@ defmodule Typst.Format.Table do
         ]
         |> Enum.reject(fn item -> item == [] end)
         |> Enum.intersperse(", ")
-        |> maybe_append_separator(),
-        Typst.Format.recurse(table.content),
+
+      [
+        "#table(",
+        join_parts([params, Typst.Format.recurse(table.content)]),
         ")"
       ]
       |> IO.iodata_to_binary()
@@ -111,8 +112,7 @@ defmodule Typst.Format.Table do
 
     defimpl String.Chars do
       def to_string(%Typst.Format.Table.Cell{} = cell) do
-        [
-          "table.cell(",
+        params =
           [
             if_set(cell.x, "x: #{cell.x}"),
             if_set(cell.y, "y: #{cell.y}"),
@@ -126,8 +126,10 @@ defmodule Typst.Format.Table do
           ]
           |> Enum.reject(fn item -> item == [] end)
           |> Enum.intersperse(", ")
-          |> maybe_append_separator(),
-          Typst.Format.recurse(cell.content),
+
+        [
+          "table.cell(",
+          join_parts([params, Typst.Format.recurse(cell.content)]),
           ")"
         ]
         |> IO.iodata_to_binary()
@@ -241,15 +243,16 @@ defmodule Typst.Format.Table do
 
     defimpl String.Chars do
       def to_string(%Typst.Format.Table.Header{} = header) do
-        [
-          "table.header(",
+        params =
           [
             if_set(header.repeat, "repeat: #{header.repeat}")
           ]
           |> Enum.reject(fn item -> item == [] end)
           |> Enum.intersperse(", ")
-          |> maybe_append_separator(),
-          Typst.Format.recurse(header.content),
+
+        [
+          "table.header(",
+          join_parts([params, Typst.Format.recurse(header.content)]),
           ")"
         ]
         |> IO.iodata_to_binary()
@@ -279,15 +282,16 @@ defmodule Typst.Format.Table do
 
     defimpl String.Chars do
       def to_string(%Typst.Format.Table.Footer{} = footer) do
-        [
-          "table.footer(",
+        params =
           [
             if_set(footer.repeat, "repeat: #{footer.repeat}")
           ]
           |> Enum.reject(fn item -> item == [] end)
           |> Enum.intersperse(", ")
-          |> maybe_append_separator(),
-          Typst.Format.recurse(footer.content),
+
+        [
+          "table.footer(",
+          join_parts([params, Typst.Format.recurse(footer.content)]),
           ")"
         ]
         |> IO.iodata_to_binary()

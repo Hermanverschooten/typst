@@ -28,7 +28,11 @@ static FONT_CACHE: LazyLock<Mutex<Option<CachedFonts>>> = LazyLock::new(|| Mutex
 static LIBRARY_CACHE: LazyLock<LazyHash<Library>> =
     LazyLock::new(|| LazyHash::new(Library::default()));
 
-static HTTP_AGENT: LazyLock<ureq::Agent> = LazyLock::new(ureq::Agent::new);
+static HTTP_AGENT: LazyLock<ureq::Agent> = LazyLock::new(|| {
+    ureq::AgentBuilder::new()
+        .timeout(std::time::Duration::from_secs(30))
+        .build()
+});
 
 static CACHE_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
     std::env::var_os("CACHE_DIRECTORY")
@@ -68,7 +72,9 @@ impl TypstNifWorld {
         sorted_key.sort();
 
         let (book, fonts) = if cache_fonts {
-            let mut cache = FONT_CACHE.lock().unwrap();
+            let mut cache = FONT_CACHE
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
 
             let needs_scan = match cache.as_ref() {
                 Some(cached) if cached.key == sorted_key => false,
@@ -261,7 +267,7 @@ impl typst::World for TypstNifWorld {
 
     /// Accessing a specified font per index of font book.
     fn font(&self, id: usize) -> Option<Font> {
-        self.fonts[id].get()
+        self.fonts.get(id).and_then(|slot| slot.get())
     }
 
     /// Get the current date.

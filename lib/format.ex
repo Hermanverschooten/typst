@@ -109,6 +109,9 @@ defmodule Typst.Format do
   defp process(element), do: content(element)
 
   @doc false
-  def maybe_append_separator([]), do: []
-  def maybe_append_separator(list), do: [list | ", "]
+  def join_parts(parts) do
+    parts
+    |> Enum.reject(&(&1 == []))
+    |> Enum.intersperse(", ")
+  end
 end
