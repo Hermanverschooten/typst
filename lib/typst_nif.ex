@@ -18,6 +18,7 @@ defmodule Typst.NIF do
     crate: "typst_nif",
     version: version,
     base_url: "#{github_url}/releases/download/v#{version}",
+    nif_versions: ["2.15", "2.17"],
     mode: mode,
     target: System.get_env("RUSTLER_TARGET")
 

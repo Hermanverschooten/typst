@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.4] - 2026-04-14
+
+### Added
+- Precompiled NIF binaries for NIF version 2.17 (OTP 28 support)
+
 ## [v0.3.3] - 2026-03-28
 
 ### Fixed
@@ -114,7 +119,8 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.3.3...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.3.4...HEAD
+[v0.3.4]: https://github.com/Hermanverschooten/typst/compare/v0.3.3...v0.3.4
 [v0.3.3]: https://github.com/Hermanverschooten/typst/compare/v0.3.2...v0.3.3
 [v0.3.2]: https://github.com/Hermanverschooten/typst/compare/v0.3.1...v0.3.2
 [v0.3.1]: https://github.com/Hermanverschooten/typst/compare/v0.3.0...v0.3.1
