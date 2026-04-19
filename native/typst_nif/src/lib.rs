@@ -15,7 +15,7 @@ use typst::text::{Font, FontBook};
 use typst::utils::LazyHash;
 use typst::{Library, LibraryExt};
 use typst_kit::fonts::{FontSlot, Fonts};
-use typst_pdf::PdfOptions;
+use typst_pdf::{PdfOptions, PdfStandard, PdfStandards};
 
 struct CachedFonts {
     key: Vec<String>,
@@ -294,6 +294,23 @@ fn http_successful(status: u16) -> bool {
     status / 100 == 2
 }
 
+fn parse_pdf_standard(s: &str) -> Result<PdfStandard, String> {
+    match s {
+        "a-1a" | "1a" => Ok(PdfStandard::A_1a),
+        "a-1b" | "1b" => Ok(PdfStandard::A_1b),
+        "a-2a" | "2a" => Ok(PdfStandard::A_2a),
+        "a-2b" | "2b" => Ok(PdfStandard::A_2b),
+        "a-2u" | "2u" => Ok(PdfStandard::A_2u),
+        "a-3a" | "3a" => Ok(PdfStandard::A_3a),
+        "a-3b" | "3b" => Ok(PdfStandard::A_3b),
+        "a-3u" | "3u" => Ok(PdfStandard::A_3u),
+        "a-4" | "4" => Ok(PdfStandard::A_4),
+        "a-4e" | "4e" => Ok(PdfStandard::A_4e),
+        "a-4f" | "4f" => Ok(PdfStandard::A_4f),
+        other => Err(format!("unknown PDF standard: {:?}", other)),
+    }
+}
+
 #[rustler::nif(schedule = "DirtyCpu")]
 fn compile_pdf<'a>(
     env: Env<'a>,
@@ -302,6 +319,7 @@ fn compile_pdf<'a>(
     extra_fonts: Vec<String>,
     assets: Vec<(String, Binary<'a>)>,
     cache_fonts: bool,
+    pdf_standards: Vec<String>,
 ) -> Result<Term<'a>, String> {
     let world = TypstNifWorld::new(root_dir, markup, extra_fonts, cache_fonts);
 
@@ -317,8 +335,20 @@ fn compile_pdf<'a>(
 
     comemo::evict(0);
 
-    let pdf_bytes =
-        typst_pdf::pdf(&document, &PdfOptions::default()).map_err(|e| format!("{:#?}", e))?;
+    let options = if pdf_standards.is_empty() {
+        PdfOptions::default()
+    } else {
+        let standards: Vec<PdfStandard> = pdf_standards
+            .iter()
+            .map(|s| parse_pdf_standard(s))
+            .collect::<Result<Vec<_>, _>>()?;
+        PdfOptions {
+            standards: PdfStandards::new(&standards),
+            ..PdfOptions::default()
+        }
+    };
+
+    let pdf_bytes = typst_pdf::pdf(&document, &options).map_err(|e| format!("{:#?}", e))?;
 
     let mut binary = NewBinary::new(env, pdf_bytes.len());
     binary.copy_from_slice(pdf_bytes.as_slice());
