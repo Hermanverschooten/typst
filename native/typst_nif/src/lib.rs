@@ -343,7 +343,7 @@ fn compile_pdf<'a>(
             .map(|s| parse_pdf_standard(s))
             .collect::<Result<Vec<_>, _>>()?;
         PdfOptions {
-            standards: PdfStandards::new(&standards),
+            standards: PdfStandards::new(&standards).map_err(|e| format!("{}", e))?,
             ..PdfOptions::default()
         }
     };
