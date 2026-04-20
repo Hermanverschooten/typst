@@ -42,6 +42,7 @@ defmodule Typst do
           | {:assets, Keyword.t() | map() | list({String.t(), binary()})}
           | {:trim, boolean()}
           | {:cache_fonts, boolean()}
+          | {:pdf_standards, list(String.t())}
 
   @spec render_to_pdf(String.t(), list(formattable()), list(typst_opt())) ::
           {:ok, binary()} | {:error, String.t()}
@@ -62,6 +63,11 @@ defmodule Typst do
 
     * `:cache_fonts` - when `true`, caches scanned fonts across calls. Defaults to `true`.
 
+    * `:pdf_standards` - a list of PDF standard strings to comply with. Supported values:
+      `"a-1a"`, `"a-1b"`, `"a-2a"`, `"a-2b"`, `"a-2u"`, `"a-3a"`, `"a-3b"`, `"a-3u"`,
+      `"a-4"`, `"a-4e"`, `"a-4f"`. Defaults to `[]` (no specific standard).
+      An unknown value returns `{:error, "unknown PDF standard: ..."}`.
+
   ## Examples
 
       iex> {:ok, pdf} = Typst.render_to_pdf("= test\\n<%= name %>", name: "John")
@@ -78,6 +84,7 @@ defmodule Typst do
     extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
     root_dir = Keyword.get(opts, :root_dir, ".")
     cache_fonts = Keyword.get(opts, :cache_fonts, true)
+    pdf_opts = %Typst.NIF.PdfOptions{standards: Keyword.get(opts, :pdf_standards, [])}
 
     assets =
       Keyword.get(opts, :assets, [])
@@ -86,7 +93,7 @@ defmodule Typst do
     trim = Keyword.get(opts, :trim, false)
     markup = render_to_string(typst_markup, bindings, trim: trim)
 
-    Typst.NIF.compile_pdf(markup, root_dir, extra_fonts, assets, cache_fonts)
+    Typst.NIF.compile_pdf(markup, root_dir, extra_fonts, assets, cache_fonts, pdf_opts)
   end
 
   @spec render_to_pdf!(String.t(), list(formattable()), list(typst_opt())) :: binary()

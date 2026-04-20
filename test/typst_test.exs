@@ -55,6 +55,23 @@ defmodule TypstTest do
     end
   end
 
+  describe "pdf_standards" do
+    test "produces a valid PDF when a standard is specified" do
+      markup = ~S"""
+      #set document(date: datetime(year: 2026, month: 1, day: 1))
+      = hello
+      """
+
+      {:ok, pdf} = Typst.render_to_pdf(markup, [], pdf_standards: ["a-2b"])
+      assert <<37, 80, 68, 70, 45, _rest::binary>> = pdf
+    end
+
+    test "returns an error on unknown standard" do
+      assert {:error, "unknown PDF standard: a-9z"} =
+               Typst.render_to_pdf("= hello", [], pdf_standards: ["a-9z"])
+    end
+  end
+
   describe "errors" do
     test "error message on invalid template" do
       template = ~S"#image("
