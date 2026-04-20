@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `:pdf_standards` option to `render_to_pdf/3` for PDF/A compliance (e.g. `"a-2b"`, `"a-4"`). Thank you [adrian-mihai-olaru](https://github.com/adrian-mihai-olaru).
+
 ## [v0.3.4] - 2026-04-14
 
 ### Added

@@ -307,7 +307,7 @@ fn parse_pdf_standard(s: &str) -> Result<PdfStandard, String> {
         "a-4" | "4" => Ok(PdfStandard::A_4),
         "a-4e" | "4e" => Ok(PdfStandard::A_4e),
         "a-4f" | "4f" => Ok(PdfStandard::A_4f),
-        other => Err(format!("unknown PDF standard: {:?}", other)),
+        other => Err(format!("unknown PDF standard: {}", other)),
     }
 }
 

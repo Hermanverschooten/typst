@@ -66,6 +66,7 @@ defmodule Typst do
     * `:pdf_standards` - a list of PDF standard strings to comply with. Supported values:
       `"a-1a"`, `"a-1b"`, `"a-2a"`, `"a-2b"`, `"a-2u"`, `"a-3a"`, `"a-3b"`, `"a-3u"`,
       `"a-4"`, `"a-4e"`, `"a-4f"`. Defaults to `[]` (no specific standard).
+      An unknown value returns `{:error, "unknown PDF standard: ..."}`.
 
   ## Examples
 
