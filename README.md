@@ -95,6 +95,20 @@ All render functions accept these options:
 
 Full documentation is available at [hexdocs.pm/typst](https://hexdocs.pm/typst).
 
+## Building from Source
+
+When you add this package to your `mix.exs` dependencies, it will by default
+attempt to use precompiled Rustler assets. To override this behaviour, add
+`{:rustler, ">= 0.0.0"}` to your `mix.exs`, and set the environment variable
+`TYPST_BUILD=true`. Alternatively, you can put the following in your
+`config.exs`:
+
+```elixir
+config :rustler_precompiled, :force_build, typst: true
+```
+
+Building from source requires a rust toolchain of at least version `1.92.0`.
+
 ## Cutting a new release
 
 * Make the code changes

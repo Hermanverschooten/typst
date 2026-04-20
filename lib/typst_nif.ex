@@ -25,6 +25,7 @@ defmodule Typst.NIF do
     base_url: "#{github_url}/releases/download/v#{version}",
     nif_versions: ["2.15", "2.17"],
     mode: mode,
+    force_build: System.get_env("TYPST_BUILD") in ["1", "true"],
     target: System.get_env("RUSTLER_TARGET")
 
   def compile_pdf(_content, _root_dir, _font_paths, _assets, _cache_fonts, _pdf_opts),
