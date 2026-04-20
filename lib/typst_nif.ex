@@ -1,6 +1,11 @@
 defmodule Typst.NIF do
   @moduledoc false
 
+  defmodule PdfOptions do
+    @moduledoc false
+    defstruct standards: []
+  end
+
   mix_config =
     Mix.Project.config()
 
@@ -22,7 +27,7 @@ defmodule Typst.NIF do
     mode: mode,
     target: System.get_env("RUSTLER_TARGET")
 
-  def compile_pdf(_content, _root_dir, _font_paths, _assets, _cache_fonts, _pdf_standards),
+  def compile_pdf(_content, _root_dir, _font_paths, _assets, _cache_fonts, _pdf_opts),
     do: :erlang.nif_error(:nif_not_loaded)
 
   def compile_png(_content, _root_dir, _font_paths, _pixels_per_pt, _assets, _cache_fonts),

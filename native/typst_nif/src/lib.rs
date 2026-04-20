@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, LazyLock, Mutex};
 
-use rustler::{Binary, Env, NewBinary, Term};
+use rustler::{Binary, Env, NewBinary, NifStruct, Term};
 use typst::diag::{
     eco_format, FileError, FileResult, PackageError, PackageResult, SourceDiagnostic,
 };
@@ -294,6 +294,12 @@ fn http_successful(status: u16) -> bool {
     status / 100 == 2
 }
 
+#[derive(NifStruct)]
+#[module = "Typst.NIF.PdfOptions"]
+struct PdfOpts {
+    standards: Vec<String>,
+}
+
 fn parse_pdf_standard(s: &str) -> Result<PdfStandard, String> {
     match s {
         "a-1a" | "1a" => Ok(PdfStandard::A_1a),
@@ -319,7 +325,7 @@ fn compile_pdf<'a>(
     extra_fonts: Vec<String>,
     assets: Vec<(String, Binary<'a>)>,
     cache_fonts: bool,
-    pdf_standards: Vec<String>,
+    pdf_opts: PdfOpts,
 ) -> Result<Term<'a>, String> {
     let world = TypstNifWorld::new(root_dir, markup, extra_fonts, cache_fonts);
 
@@ -335,10 +341,11 @@ fn compile_pdf<'a>(
 
     comemo::evict(0);
 
-    let options = if pdf_standards.is_empty() {
+    let options = if pdf_opts.standards.is_empty() {
         PdfOptions::default()
     } else {
-        let standards: Vec<PdfStandard> = pdf_standards
+        let standards: Vec<PdfStandard> = pdf_opts
+            .standards
             .iter()
             .map(|s| parse_pdf_standard(s))
             .collect::<Result<Vec<_>, _>>()?;

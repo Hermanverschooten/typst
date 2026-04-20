@@ -84,7 +84,7 @@ defmodule Typst do
     extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
     root_dir = Keyword.get(opts, :root_dir, ".")
     cache_fonts = Keyword.get(opts, :cache_fonts, true)
-    pdf_standards = Keyword.get(opts, :pdf_standards, [])
+    pdf_opts = %Typst.NIF.PdfOptions{standards: Keyword.get(opts, :pdf_standards, [])}
 
     assets =
       Keyword.get(opts, :assets, [])
@@ -93,7 +93,7 @@ defmodule Typst do
     trim = Keyword.get(opts, :trim, false)
     markup = render_to_string(typst_markup, bindings, trim: trim)
 
-    Typst.NIF.compile_pdf(markup, root_dir, extra_fonts, assets, cache_fonts, pdf_standards)
+    Typst.NIF.compile_pdf(markup, root_dir, extra_fonts, assets, cache_fonts, pdf_opts)
   end
 
   @spec render_to_pdf!(String.t(), list(formattable()), list(typst_opt())) :: binary()
