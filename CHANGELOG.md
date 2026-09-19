@@ -145,7 +145,7 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.4.3...HEAD
 [v0.4.3]: https://github.com/Hermanverschooten/typst/compare/v0.4.2...v0.4.3
 [v0.4.2]: https://github.com/Hermanverschooten/typst/compare/v0.4.1...v0.4.2
 [v0.4.1]: https://github.com/Hermanverschooten/typst/compare/v0.4.0...v0.4.1
