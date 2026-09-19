@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Embedded fonts in `priv/fonts` not found when running as a release. The font directory was resolved from `:code.priv_dir/1` at compile time, baking in the build machine's path instead of resolving it at runtime. Thank you [kristiangronberg](https://github.com/kristiangronberg).
+
 ## [v0.4.2] - 2026-07-17
 
 ### Changed
