@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.4.3] - 2026-09-19
+
+### Fixed
+- Embedded fonts in `priv/fonts` not found when running as a release. The font directory was resolved from `:code.priv_dir/1` at compile time, baking in the build machine's path instead of resolving it at runtime. Thank you [kristiangronberg](https://github.com/kristiangronberg).
+
 ## [v0.4.2] - 2026-07-17
 
 ### Changed
@@ -140,7 +145,8 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.4.3...HEAD
+[v0.4.3]: https://github.com/Hermanverschooten/typst/compare/v0.4.2...v0.4.3
 [v0.4.2]: https://github.com/Hermanverschooten/typst/compare/v0.4.1...v0.4.2
 [v0.4.1]: https://github.com/Hermanverschooten/typst/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/Hermanverschooten/typst/compare/v0.3.4...v0.4.0

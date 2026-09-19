@@ -9,8 +9,6 @@ defmodule Typst do
   See [Typst's documentation](https://typst.app/docs) for a quickstart.
   """
 
-  @embedded_fonts [Path.join(:code.priv_dir(:typst), "fonts")]
-
   @type formattable :: {atom, any}
 
   @spec render_to_string(String.t(), list(formattable), list({:trim, boolean()})) :: String.t()
@@ -81,7 +79,7 @@ defmodule Typst do
 
   """
   def render_to_pdf(typst_markup, bindings \\ [], opts \\ []) do
-    extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
+    extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ embedded_fonts()
     root_dir = Keyword.get(opts, :root_dir, ".")
     cache_fonts = Keyword.get(opts, :cache_fonts, true)
     pdf_opts = %Typst.NIF.PdfOptions{standards: Keyword.get(opts, :pdf_standards, [])}
@@ -136,7 +134,7 @@ defmodule Typst do
 
   """
   def render_to_png(typst_markup, bindings \\ [], opts \\ []) do
-    extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
+    extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ embedded_fonts()
     root_dir = Keyword.get(opts, :root_dir, ".")
     pixels_per_pt = Keyword.get(opts, :pixels_per_pt, 1.0)
     cache_fonts = Keyword.get(opts, :cache_fonts, true)
@@ -189,7 +187,7 @@ defmodule Typst do
 
   """
   def render_to_svg(typst_markup, bindings \\ [], opts \\ []) do
-    extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ @embedded_fonts
+    extra_fonts = Keyword.get(opts, :extra_fonts, []) ++ embedded_fonts()
     root_dir = Keyword.get(opts, :root_dir, ".")
     cache_fonts = Keyword.get(opts, :cache_fonts, true)
 
@@ -213,4 +211,6 @@ defmodule Typst do
       {:error, reason} -> raise "could not build svg: #{reason}"
     end
   end
+
+  defp embedded_fonts, do: [Path.join(:code.priv_dir(:typst), "fonts")]
 end
