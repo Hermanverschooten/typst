@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `comemo`'s memoization cache was not evicted after a failed compile in `compile_pdf/6`, `compile_png/6`, and `compile_svg/5`, since the eviction sat after the `?` that returns early on error. A render that keeps failing (e.g. user-supplied templates in a long-running server) grew the cache without bound. Thank you [kristiangronberg](https://github.com/kristiangronberg).
+
 ## [v0.4.3] - 2026-09-19
 
 ### Fixed

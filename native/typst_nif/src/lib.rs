@@ -328,11 +328,13 @@ fn compile_pdf<'a>(
             .map_err(|e| format!("{:#?}", e))?;
     }
 
-    let document: PagedDocument = typst::compile(&world)
+    let compiled = typst::compile(&world)
         .output
-        .map_err(|e| collect_typst_errors(e, &world))?;
+        .map_err(|e| collect_typst_errors(e, &world));
 
     comemo::evict(0);
+
+    let document: PagedDocument = compiled?;
 
     let options = if pdf_opts.standards.is_empty() {
         PdfOptions::default()
@@ -375,11 +377,13 @@ fn compile_png<'a>(
             .map_err(|e| format!("{:#?}", e))?;
     }
 
-    let document: PagedDocument = typst::compile(&world)
+    let compiled = typst::compile(&world)
         .output
-        .map_err(|e| collect_typst_errors(e, &world))?;
+        .map_err(|e| collect_typst_errors(e, &world));
 
     comemo::evict(0);
+
+    let document: PagedDocument = compiled?;
 
     let options = typst_render::RenderOptions {
         pixel_per_pt: typst::utils::Scalar::new(pixels_per_pt),
@@ -418,11 +422,13 @@ fn compile_svg<'a>(
             .map_err(|e| format!("{:#?}", e))?;
     }
 
-    let document: PagedDocument = typst::compile(&world)
+    let compiled = typst::compile(&world)
         .output
-        .map_err(|e| collect_typst_errors(e, &world))?;
+        .map_err(|e| collect_typst_errors(e, &world));
 
     comemo::evict(0);
+
+    let document: PagedDocument = compiled?;
 
     let options = typst_svg::SvgOptions::default();
     let svgs: Vec<Binary> = document
