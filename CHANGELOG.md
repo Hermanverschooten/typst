@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.4.4] - 2026-09-21
+
 ### Fixed
 - `comemo`'s memoization cache was not evicted after a failed compile in `compile_pdf/6`, `compile_png/6`, and `compile_svg/5`, since the eviction sat after the `?` that returns early on error. A render that keeps failing (e.g. user-supplied templates in a long-running server) grew the cache without bound. Thank you [kristiangronberg](https://github.com/kristiangronberg).
 
@@ -148,7 +150,8 @@ Updated Typst to verion 0.13 with thanks to a PR from kevinschweikert
 
 First release.
 
-[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.4.3...HEAD
+[Unreleased]: https://github.com/Hermanverschooten/typst/compare/v0.4.4...HEAD
+[v0.4.4]: https://github.com/Hermanverschooten/typst/compare/v0.4.3...v0.4.4
 [v0.4.3]: https://github.com/Hermanverschooten/typst/compare/v0.4.2...v0.4.3
 [v0.4.2]: https://github.com/Hermanverschooten/typst/compare/v0.4.1...v0.4.2
 [v0.4.1]: https://github.com/Hermanverschooten/typst/compare/v0.4.0...v0.4.1
